@@ -1,0 +1,9 @@
+{
+    "name": "andi/project-web-peche",
+    "autoload": {
+        "psr-4": {
+            "Andi\\ProjectWebPeche\\": "src/"
+        }
+    },
+    "require": {}
+}
