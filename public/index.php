@@ -1,17 +1,8 @@
 <?php
-// ============================================================
-// public/index.php — Routeur principal
-// Toutes les URLs passent par ici grâce au .htaccess
-// ============================================================
-
 session_start();
 
-// On récupère l'URL tapée dans le navigateur
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-// ============================================================
-// ROUTES
-// ============================================================
 switch ($uri) {
 
     // Page d'accueil
@@ -35,7 +26,7 @@ switch ($uri) {
         $ctrl->register();
         break;
 
-    // URL inconnue → 404
+    // url inconnue => 404
     default:
         http_response_code(404);
         echo '<h1>404 — Page introuvable</h1>';

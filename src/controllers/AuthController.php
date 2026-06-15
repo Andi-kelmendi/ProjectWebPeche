@@ -1,17 +1,10 @@
 <?php
-// ============================================================
-// src/controllers/AuthController.php
-// Gère l'affichage ET le traitement des formulaires
-// ============================================================
-
+    
 require_once __DIR__ . '/../config/database.php';
 
 class AuthController
 {
-    // --------------------------------------------------------
-    // GET  /login  → affiche le formulaire
-    // POST /login  → traite la connexion
-    // --------------------------------------------------------
+    
     public function login(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -21,10 +14,7 @@ class AuthController
         }
     }
 
-    // --------------------------------------------------------
-    // GET  /register  → affiche le formulaire
-    // POST /register  → traite l'inscription
-    // --------------------------------------------------------
+  
     public function register(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -34,9 +24,7 @@ class AuthController
         }
     }
 
-    // --------------------------------------------------------
-    // Traitement de la connexion (POST /login)
-    // --------------------------------------------------------
+  
     private function handleLogin(): void
     {
         $email    = trim($_POST['email']    ?? '');
@@ -61,11 +49,10 @@ class AuthController
             exit;
         }
 
-        // Connexion réussie → on stocke l'utilisateur en session
         $_SESSION['user_id']  = $user['id'];
         $_SESSION['username'] = $user['username'];
 
-        // Cookie "Se souvenir de moi" (30 jours)
+        // Cookie pour se souvenir de la personne
         if (!empty($_POST['remember'])) {
             setcookie('remember_me', session_id(), time() + 60 * 60 * 24 * 30, '/');
         }
@@ -74,9 +61,8 @@ class AuthController
         exit;
     }
 
-    // --------------------------------------------------------
-    // Traitement de l'inscription (POST /register)
-    // --------------------------------------------------------
+
+    
     private function handleRegister(): void
     {
         $username = trim($_POST['username'] ?? '');
@@ -118,7 +104,7 @@ class AuthController
         $stmt = $pdo->prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
         $stmt->execute([$username, $email, $hash]);
 
-        // Redirige vers /login avec un message de succès
+        // Renvoi sur /login 
         $_SESSION['auth_success'] = 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.';
         header('Location: /login');
         exit;
