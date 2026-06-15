@@ -21,6 +21,20 @@ switch ($uri) {
         $ctrl->index();
         break;
 
+    // Connexion
+    case '/login':
+        require_once __DIR__ . '/../src/controllers/AuthController.php';
+        $ctrl = new AuthController();
+        $ctrl->login();
+        break;
+
+    // Inscription
+    case '/register':
+        require_once __DIR__ . '/../src/controllers/AuthController.php';
+        $ctrl = new AuthController();
+        $ctrl->register();
+        break;
+
     // URL inconnue → 404
     default:
         http_response_code(404);

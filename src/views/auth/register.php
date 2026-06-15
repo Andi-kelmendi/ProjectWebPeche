@@ -1,163 +1,159 @@
+<?php
+// ============================================================
+// src/views/auth/register.php — Page d'inscription
+// ============================================================
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <title>Créer un compte — WebPêche</title>
     <link rel="stylesheet" href="/assets/css/auth.css">
-    <title>Créer un compte – WebPêche</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-<body class="auth-body">
-
+<body>
 <div class="auth-container">
 
-    <!-- ======================================================
-         PARTIE GAUCHE — Formulaire d'inscription
-    ====================================================== -->
-    <div class="auth-left">
-        <a href="/" class="auth-logo">WebPêche</a>
+    <!-- ══════════════════════════════════════
+         PANNEAU GAUCHE — Formulaire
+    ══════════════════════════════════════ -->
+    <div class="auth-panel">
 
-        <div class="auth-form-wrapper">
-            <h1>Crée un compte</h1>
-            <p class="auth-switch">
-                Vous avez déjà un compte ?
-                <a href="/login">Se connecter</a>
-            </p>
+        <!-- Logo -->
+        <a href="/" class="auth-logo">
+            <img src="/assets/img/logo.png" alt="WebPêche">
+            <span class="auth-logo-text">WebPêche</span>
+        </a>
 
-            <!-- Affichage des erreurs -->
-            <?php if (!empty($errors)): ?>
-                <div class="auth-errors">
-                    <?php foreach ($errors as $error): ?>
-                        <p>⚠️ <?= htmlspecialchars($error) ?></p>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+        <!-- Titre -->
+        <h1>Créer un compte</h1>
+        <p class="auth-subtitle">
+            Vous avez déjà un compte ?
+            <a href="/login">Se connecter</a>
+        </p>
 
-            <div class="auth-form">
-
-                <div class="input-group">
-                    <span class="input-icon">👤</span>
-                    <input
-                        type="text"
-                        name="username"
-                        placeholder="Pseudo"
-                        value="<?= htmlspecialchars($_POST['username'] ?? '') ?>"
-                        required
-                        minlength="3"
-                        autocomplete="username"
-                    >
-                </div>
-
-                <div class="input-group">
-                    <span class="input-icon">✉️</span>
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Email"
-                        value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
-                        required
-                        autocomplete="email"
-                    >
-                </div>
-
-                <div class="input-group">
-                    <span class="input-icon">🔒</span>
-                    <input
-                        type="password"
-                        name="password"
-                        id="password"
-                        placeholder="Mot de passe (min. 8 caractères)"
-                        required
-                        minlength="8"
-                        autocomplete="new-password"
-                    >
-                    <button type="button" class="toggle-password" onclick="togglePassword('password', this)">
-                        👁️
-                    </button>
-                </div>
-
-                <div class="input-group">
-                    <span class="input-icon">🔒</span>
-                    <input
-                        type="password"
-                        name="confirm"
-                        id="confirm"
-                        placeholder="Confirmer le mot de passe"
-                        required
-                        autocomplete="new-password"
-                    >
-                    <button type="button" class="toggle-password" onclick="togglePassword('confirm', this)">
-                        👁️
-                    </button>
-                </div>
-
-                <label class="checkbox-label">
-                    <input type="checkbox" name="remember"> Se souvenir de moi
-                </label>
-
-                <button class="btn-auth" onclick="submitRegister()">Créer mon compte</button>
+        <!-- Messages d'erreur -->
+        <?php if (!empty($_SESSION['auth_error'])): ?>
+            <div class="alert alert-error">
+                <?= htmlspecialchars($_SESSION['auth_error']) ?>
             </div>
-        </div>
+            <?php unset($_SESSION['auth_error']); ?>
+        <?php endif; ?>
+
+        <!-- Formulaire d'inscription -->
+        <form class="auth-form" action="/register" method="POST">
+
+            <!-- Nom d'utilisateur (pleine largeur) -->
+            <div class="form-group">
+                <i class="fa-regular fa-user field-icon"></i>
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="Nom d'utilisateur"
+                    required
+                    autocomplete="username"
+                    maxlength="50"
+                    value="<?= htmlspecialchars($_POST['username'] ?? '') ?>"
+                >
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                <i class="fa-regular fa-envelope field-icon"></i>
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="Adresse email"
+                    required
+                    autocomplete="email"
+                    value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                >
+            </div>
+
+            <!-- Mot de passe -->
+            <div class="form-group">
+                <i class="fa-solid fa-lock field-icon"></i>
+                <input
+                    type="password"
+                    name="password"
+                    id="reg-pwd"
+                    placeholder="Mot de passe (6 caractères minimum)"
+                    required
+                    autocomplete="new-password"
+                    minlength="6"
+                >
+                <button type="button" class="toggle-pwd" onclick="togglePwd('reg-pwd', this)" title="Afficher / masquer">
+                    <i class="fa-regular fa-eye"></i>
+                </button>
+            </div>
+
+            <!-- Se souvenir de moi -->
+            <div class="form-extras">
+                <label class="remember-label">
+                    <input type="checkbox" name="remember">
+                    Se souvenir de moi
+                </label>
+            </div>
+
+            <!-- Bouton inscription -->
+            <button type="submit" class="btn-auth">Créer mon compte</button>
+
+        </form>
     </div>
 
-    <!-- ======================================================
-         PARTIE DROITE — Carte décorative
-    ====================================================== -->
-    <div class="auth-right">
-        <img src="/assets/img/map-preview.jpg" alt="Carte des spots" class="map-preview">
-        <div class="map-overlay-btn">
-            <span>⋮</span>
+    <!-- ══════════════════════════════════════
+         PANNEAU DROIT — Décoration
+    ══════════════════════════════════════ -->
+    <div class="auth-bg">
+
+        <!-- Cercles d'ambiance -->
+        <div class="bg-circle bg-circle-1"></div>
+        <div class="bg-circle bg-circle-2"></div>
+        <div class="bg-circle bg-circle-3"></div>
+
+        <!-- Grille de points -->
+        <div class="bg-dots">
+            <?php for ($i = 0; $i < 81; $i++): ?><span></span><?php endfor; ?>
         </div>
+
+        <!-- Message central -->
+        <div class="auth-bg-content">
+            <span class="auth-bg-icon">🐟</span>
+            <h2>Rejoignez la communauté !</h2>
+            <p>
+                Découvrez les meilleurs spots de pêche, partagez vos expériences
+                et connectez-vous avec des milliers de pêcheurs passionnés.
+            </p>
+        </div>
+
+        <!-- Vagues décoratives en bas -->
+        <div class="bg-waves">
+            <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                <path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z"
+                      fill="rgba(255,255,255,0.06)"/>
+                <path d="M0,60 C360,20 720,80 1080,40 C1260,20 1380,60 1440,60 L1440,80 L0,80 Z"
+                      fill="rgba(255,255,255,0.04)"/>
+            </svg>
+        </div>
+
     </div>
 
 </div>
 
 <script>
-    function togglePassword(inputId, btn) {
+    function togglePwd(inputId, btn) {
         const input = document.getElementById(inputId);
-        input.type  = input.type === 'password' ? 'text' : 'password';
-        btn.textContent = input.type === 'password' ? '👁️' : '🙈';
-    }
-
-    function submitRegister() {
-        // Vérification côté client que les mots de passe correspondent
-        const pw  = document.getElementById('password').value;
-        const cnf = document.getElementById('confirm').value;
-
-        if (pw !== cnf) {
-            alert('Les mots de passe ne correspondent pas.');
-            return;
+        const icon  = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type     = 'text';
+            icon.className = 'fa-regular fa-eye-slash';
+        } else {
+            input.type     = 'password';
+            icon.className = 'fa-regular fa-eye';
         }
-
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/register';
-
-        const fields = {
-            username: document.querySelector('input[name="username"]').value,
-            email:    document.querySelector('input[name="email"]').value,
-            password: pw,
-            confirm:  cnf,
-            remember: document.querySelector('input[name="remember"]').checked ? '1' : ''
-        };
-
-        for (const [name, value] of Object.entries(fields)) {
-            const input = document.createElement('input');
-            input.type  = 'hidden';
-            input.name  = name;
-            input.value = value;
-            form.appendChild(input);
-        }
-
-        document.body.appendChild(form);
-        form.submit();
     }
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') submitRegister();
-    });
 </script>
+
 </body>
 </html>

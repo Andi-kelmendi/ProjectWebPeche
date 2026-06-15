@@ -125,6 +125,7 @@
         <h2>Rejoindre Notre Communauté</h2>
         <p>Découvrez une communauté passionné par la pêche</p>
         <a href="/register" class="btn-cta">Commencer l'Aventure</a>
+        p
     </section>
 
 </body>

@@ -1,139 +1,154 @@
+<?php
+// ============================================================
+// src/views/auth/login.php — Page de connexion
+// ============================================================
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <title>Se connecter — WebPêche</title>
     <link rel="stylesheet" href="/assets/css/auth.css">
-    <title>Connexion – WebPêche</title>
+    <!-- Icônes Font Awesome (chargé depuis le navigateur, pas besoin de CDN local) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-<body class="auth-body">
-
+<body>
 <div class="auth-container">
 
-    <!-- ======================================================
-         PARTIE GAUCHE — Formulaire de connexion
-    ====================================================== -->
-    <div class="auth-left">
-        <a href="/" class="auth-logo">WebPêche</a>
+    <!-- ══════════════════════════════════════
+         PANNEAU GAUCHE — Formulaire
+    ══════════════════════════════════════ -->
+    <div class="auth-panel">
 
-        <div class="auth-form-wrapper">
-            <h1>Se connecter</h1>
-            <p class="auth-switch">
-                Pas encore de compte ?
-                <a href="/register">Créer un compte</a>
-            </p>
+        <!-- Logo -->
+        <a href="/" class="auth-logo">
+            <img src="/assets/img/logo.png" alt="WebPêche">
+            <span class="auth-logo-text">WebPêche</span>
+        </a>
 
-            <!-- Affichage des erreurs si il y en a -->
-            <?php if (!empty($errors)): ?>
-                <div class="auth-errors">
-                    <?php foreach ($errors as $error): ?>
-                        <p>⚠️ <?= htmlspecialchars($error) ?></p>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+        <!-- Titre -->
+        <h1>Se connecter</h1>
+        <p class="auth-subtitle">
+            Vous n'avez pas de compte ?
+            <a href="/register">Créer un compte</a>
+        </p>
 
-            <!-- Formulaire -->
-            <!-- action="" = envoie vers la même URL, method POST -->
-            <div class="auth-form">
-
-                <div class="input-group">
-                    <span class="input-icon">✉️</span>
-                    <input
-                        type="email"
-                        name="email"
-                        placeholder="Email"
-                        value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
-                        required
-                        autocomplete="email"
-                    >
-                </div>
-
-                <div class="input-group">
-                    <span class="input-icon">🔒</span>
-                    <input
-                        type="password"
-                        name="password"
-                        id="password"
-                        placeholder="Mot de passe"
-                        required
-                        autocomplete="current-password"
-                    >
-                    <!-- Bouton pour afficher/masquer le mot de passe -->
-                    <button type="button" class="toggle-password" onclick="togglePassword('password', this)">
-                        👁️
-                    </button>
-                </div>
-
-                <label class="checkbox-label">
-                    <input type="checkbox" name="remember"> Se souvenir de moi
-                </label>
-
-                <!-- Bouton qui soumet le formulaire via JS (on évite <form>) -->
-                <button class="btn-auth" onclick="submitLogin()">Login</button>
-
-                <a href="/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
+        <!-- Messages d'erreur / succès -->
+        <?php if (!empty($_SESSION['auth_error'])): ?>
+            <div class="alert alert-error">
+                <?= htmlspecialchars($_SESSION['auth_error']) ?>
             </div>
-        </div>
+            <?php unset($_SESSION['auth_error']); ?>
+        <?php endif; ?>
+
+        <?php if (!empty($_SESSION['auth_success'])): ?>
+            <div class="alert alert-success">
+                <?= htmlspecialchars($_SESSION['auth_success']) ?>
+            </div>
+            <?php unset($_SESSION['auth_success']); ?>
+        <?php endif; ?>
+
+        <!-- Formulaire de connexion -->
+        <form class="auth-form" action="/login" method="POST">
+
+            <!-- Email -->
+            <div class="form-group">
+                <i class="fa-regular fa-envelope field-icon"></i>
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="Adresse email"
+                    required
+                    autocomplete="email"
+                    value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                >
+            </div>
+
+            <!-- Mot de passe -->
+            <div class="form-group">
+                <i class="fa-solid fa-lock field-icon"></i>
+                <input
+                    type="password"
+                    name="password"
+                    id="login-pwd"
+                    placeholder="Mot de passe"
+                    required
+                    autocomplete="current-password"
+                >
+                <button type="button" class="toggle-pwd" onclick="togglePwd('login-pwd', this)" title="Afficher / masquer">
+                    <i class="fa-regular fa-eye"></i>
+                </button>
+            </div>
+
+            <!-- Se souvenir + Mot de passe oublié -->
+            <div class="form-extras">
+                <label class="remember-label">
+                    <input type="checkbox" name="remember">
+                    Se souvenir de moi
+                </label>
+                <a href="/forgot-password" class="forgot-link">Mot de passe oublié</a>
+            </div>
+
+            <!-- Bouton connexion -->
+            <button type="submit" class="btn-auth">Se connecter</button>
+
+        </form>
     </div>
 
-    <!-- ======================================================
-         PARTIE DROITE — Carte décorative
-    ====================================================== -->
-    <div class="auth-right">
-        <!-- Image de carte statique comme décoration -->
-        <!-- Plus tard on pourra mettre une vraie carte ici -->
-        <img src="/assets/img/map-preview.jpg" alt="Carte des spots" class="map-preview">
-        <div class="map-overlay-btn">
-            <span>⋮</span>
+    <!-- ══════════════════════════════════════
+         PANNEAU DROIT — Décoration
+    ══════════════════════════════════════ -->
+    <div class="auth-bg">
+
+        <!-- Cercles d'ambiance -->
+        <div class="bg-circle bg-circle-1"></div>
+        <div class="bg-circle bg-circle-2"></div>
+        <div class="bg-circle bg-circle-3"></div>
+
+        <!-- Grille de points -->
+        <div class="bg-dots">
+            <?php for ($i = 0; $i < 81; $i++): ?><span></span><?php endfor; ?>
         </div>
+
+        <!-- Message central -->
+        <div class="auth-bg-content">
+            <span class="auth-bg-icon">🎣</span>
+            <h2>Content de vous revoir !</h2>
+            <p>
+                Retrouvez vos spots favoris, partagez vos plus belles prises
+                et rejoignez la communauté des pêcheurs passionnés.
+            </p>
+        </div>
+
+        <!-- Vagues décoratives en bas -->
+        <div class="bg-waves">
+            <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                <path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z"
+                      fill="rgba(255,255,255,0.06)"/>
+                <path d="M0,60 C360,20 720,80 1080,40 C1260,20 1380,60 1440,60 L1440,80 L0,80 Z"
+                      fill="rgba(255,255,255,0.04)"/>
+            </svg>
+        </div>
+
     </div>
 
 </div>
 
 <script>
-    // Affiche ou masque le mot de passe
-    function togglePassword(inputId, btn) {
+    // Afficher / masquer le mot de passe
+    function togglePwd(inputId, btn) {
         const input = document.getElementById(inputId);
+        const icon  = btn.querySelector('i');
         if (input.type === 'password') {
-            input.type = 'text';
-            btn.textContent = '🙈';
+            input.type     = 'text';
+            icon.className = 'fa-regular fa-eye-slash';
         } else {
-            input.type = 'password';
-            btn.textContent = '👁️';
+            input.type     = 'password';
+            icon.className = 'fa-regular fa-eye';
         }
     }
-
-    // Soumet le formulaire via une vraie requête POST
-    function submitLogin() {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/login';
-
-        const fields = {
-            email:    document.querySelector('input[name="email"]').value,
-            password: document.querySelector('input[name="password"]').value,
-            remember: document.querySelector('input[name="remember"]').checked ? '1' : ''
-        };
-
-        for (const [name, value] of Object.entries(fields)) {
-            const input = document.createElement('input');
-            input.type  = 'hidden';
-            input.name  = name;
-            input.value = value;
-            form.appendChild(input);
-        }
-
-        document.body.appendChild(form);
-        form.submit();
-    }
-
-    // Permet aussi d'appuyer sur Entrée pour soumettre
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') submitLogin();
-    });
 </script>
+
 </body>
 </html>
