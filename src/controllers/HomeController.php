@@ -1,13 +1,12 @@
 <?php
-// ============================================================
-// src/controllers/HomeController.php
-// ============================================================
+
+use Andi\ProjectWebPeche\Config\View;
 
 class HomeController {
 
-    // Appelé quand on visite "/"
     public function index(): void {
-        // Charge et affiche la vue home.php
-        require_once __DIR__ . '/../views/home.php';
+
+        $view = new View();
+        $view->render('home');
     }
 }

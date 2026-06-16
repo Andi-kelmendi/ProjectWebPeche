@@ -1,5 +1,14 @@
 <?php
 session_start();
+$autoload = __DIR__ . '/../vendor/autoload.php';
+if (file_exists($autoload)) {
+    require_once $autoload;
+} else {
+    http_response_code(500);
+    echo '<h1>Missing dependencies</h1>';
+    echo '<p>Run <code>composer install</code> in the project root to generate <code>vendor/autoload.php</code>.</p>';
+    exit;
+}
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
@@ -8,22 +17,19 @@ switch ($uri) {
     // Page d'accueil
     case '/':
         require_once __DIR__ . '/../src/controllers/HomeController.php';
-        $ctrl = new HomeController();
-        $ctrl->index();
+        (new HomeController())->index();
         break;
 
     // Connexion
     case '/login':
         require_once __DIR__ . '/../src/controllers/AuthController.php';
-        $ctrl = new AuthController();
-        $ctrl->login();
+        (new AuthController())->login();
         break;
 
     // Inscription
     case '/register':
         require_once __DIR__ . '/../src/controllers/AuthController.php';
-        $ctrl = new AuthController();
-        $ctrl->register();
+        (new AuthController())->register();
         break;
 
     // url inconnue => 404

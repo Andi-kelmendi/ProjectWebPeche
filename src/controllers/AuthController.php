@@ -1,5 +1,5 @@
 <?php
-    
+
 require_once __DIR__ . '/../config/database.php';
 
 class AuthController
@@ -62,7 +62,7 @@ class AuthController
     }
 
 
-    
+
     private function handleRegister(): void
     {
         $username = trim($_POST['username'] ?? '');
@@ -82,11 +82,13 @@ class AuthController
             exit;
         }
 
+
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $_SESSION['auth_error'] = 'Adresse email invalide.';
             header('Location: /register');
             exit;
         }
+
 
         $pdo = Database::connect();
 
@@ -104,6 +106,7 @@ class AuthController
         $stmt = $pdo->prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
         $stmt->execute([$username, $email, $hash]);
 
+        
         // Renvoi sur /login 
         $_SESSION['auth_success'] = 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.';
         header('Location: /login');
