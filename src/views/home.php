@@ -11,7 +11,7 @@
     <!-- NAVBAR -->
     <nav>
         <a href="/" class="nav-logo">
-        <img src="../assets/img/logo.png" alt="WebPêche" width="50">
+        <img src="../assets/img/logo.png" alt="WebPêche" width="80">
         </a>
         <div class="liens">
             <ul class="nav-links">

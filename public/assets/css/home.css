@@ -21,7 +21,7 @@ nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 60px;
+  padding: 18px 10%;
   border-bottom: 1px solid #e8e8e8;
 }
 
@@ -144,7 +144,6 @@ nav {
 
 /* --- RESPONSIVE --- */
 @media (max-width: 900px) {
-  nav { padding: 16px 24px; }
   .nav-links { gap: 20px; }
   .hero { flex-direction: column; padding: 40px 24px; }
   .hero-text h1 { font-size: 40px; }
@@ -321,7 +320,7 @@ nav {
     background: #3a5068;
     color: white;
     text-align: center;
-    padding: 90px 8%;
+    padding: 50px 8%;
 }
 
 .cta-section h2 {
@@ -333,7 +332,6 @@ nav {
 .cta-section p {
     font-size: 17px;
     color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 40px;
 }
 
 .btn-cta {
@@ -341,7 +339,7 @@ nav {
     background: rgba(255, 255, 255, 0.15);
     color: white;
     padding: 16px 44px;
-    margin-bottom: 40px;
+    margin: 30px 0 50px 0;
     border-radius: 10px;
     font-size: 16px;
     font-weight: 600;
@@ -363,6 +361,7 @@ nav {
 }
 
 @media (max-width: 768px) {
+    .nav-links { display: none; }
     .spots-grid           { grid-template-columns: 1fr; }
     .spots-section h2,
     .community-left h2,

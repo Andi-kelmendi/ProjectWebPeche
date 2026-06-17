@@ -1,10 +1,17 @@
 <?php
+// ============================================================
+// src/controllers/AuthController.php
+// Gère l'affichage ET le traitement des formulaires
+// ============================================================
 
 require_once __DIR__ . '/../config/database.php';
 
 class AuthController
 {
-    
+    // --------------------------------------------------------
+    // GET  /login  → affiche le formulaire
+    // POST /login  → traite la connexion
+    // --------------------------------------------------------
     public function login(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -14,7 +21,10 @@ class AuthController
         }
     }
 
-  
+    // --------------------------------------------------------
+    // GET  /register  → affiche le formulaire
+    // POST /register  → traite l'inscription
+    // --------------------------------------------------------
     public function register(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -24,7 +34,9 @@ class AuthController
         }
     }
 
-  
+    // --------------------------------------------------------
+    // Traitement de la connexion (POST /login)
+    // --------------------------------------------------------
     private function handleLogin(): void
     {
         $email    = trim($_POST['email']    ?? '');
@@ -49,20 +61,24 @@ class AuthController
             exit;
         }
 
+        // Connexion réussie → on stocke l'utilisateur en session
         $_SESSION['user_id']  = $user['id'];
         $_SESSION['username'] = $user['username'];
+        $_SESSION['email']    = $user['email'];
 
-        // Cookie pour se souvenir de la personne
+        // Cookie "Se souvenir de moi" (30 jours)
         if (!empty($_POST['remember'])) {
             setcookie('remember_me', session_id(), time() + 60 * 60 * 24 * 30, '/');
         }
 
-        header('Location: /');
+        // Redirection vers la page d'accueil (carte)
+        header('Location: /accueil');
         exit;
     }
 
-
-
+    // --------------------------------------------------------
+    // Traitement de l'inscription (POST /register)
+    // --------------------------------------------------------
     private function handleRegister(): void
     {
         $username = trim($_POST['username'] ?? '');
@@ -82,13 +98,11 @@ class AuthController
             exit;
         }
 
-
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $_SESSION['auth_error'] = 'Adresse email invalide.';
             header('Location: /register');
             exit;
         }
-
 
         $pdo = Database::connect();
 
@@ -105,11 +119,15 @@ class AuthController
         $hash = password_hash($password, PASSWORD_BCRYPT);
         $stmt = $pdo->prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
         $stmt->execute([$username, $email, $hash]);
+        $newId = $pdo->lastInsertId();
 
-        
-        // Renvoi sur /login 
-        $_SESSION['auth_success'] = 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.';
-        header('Location: /login');
+        // Connecte directement l'utilisateur après inscription
+        $_SESSION['user_id']  = $newId;
+        $_SESSION['username'] = $username;
+        $_SESSION['email']    = $email;
+
+        // Redirection directe vers la page d'accueil (carte)
+        header('Location: /accueil');
         exit;
     }
 }
