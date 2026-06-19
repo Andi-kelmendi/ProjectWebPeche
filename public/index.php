@@ -43,6 +43,43 @@ switch ($uri) {
         require_once __DIR__ . '/../src/views/accueil.php';
         break;
 
+    // --------------------------------------------------------
+    // API — Spots de pêche
+    // --------------------------------------------------------
+
+    // GET  : liste tous les spots (pour les marqueurs)
+    // POST : crée un nouveau spot
+    case '/api/spots':
+        require_once __DIR__ . '/../src/controllers/SpotController.php';
+        $ctrl = new SpotController();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $ctrl->store();
+        } else {
+            $ctrl->index();
+        }
+        break;
+
+    // GET ?id=X : détail d'un spot (description + avis)
+    case '/api/spot':
+        require_once __DIR__ . '/../src/controllers/SpotController.php';
+        $ctrl = new SpotController();
+        $ctrl->show();
+        break;
+
+    // POST : like / dislike un spot
+    case '/api/spot/rate':
+        require_once __DIR__ . '/../src/controllers/SpotController.php';
+        $ctrl = new SpotController();
+        $ctrl->rate();
+        break;
+
+    // POST : ajoute un avis (commentaire) sur un spot
+    case '/api/spot/comment':
+        require_once __DIR__ . '/../src/controllers/SpotController.php';
+        $ctrl = new SpotController();
+        $ctrl->comment();
+        break;
+
     // URL inconnue → 404
     default:
         http_response_code(404);
