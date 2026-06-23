@@ -154,10 +154,10 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                         <div class="materiel-card">
                             <div class="materiel-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
                             <div class="materiel-body">
-                                <h4>Canne à pêche télescopique</h4>
-                                <p>Pour débuter, une canne télescopique entre 3 et 4 m est idéale. Simple à utiliser, pas de moulinet à maîtriser.</p>
+                                <h4>Canne à pêche</h4>
+                                <p>Pour débuter, une canne entre 3 et 4 m est idéale. Simple à utiliser, pas de moulinet à maîtriser.</p>
                                 <div class="materiel-links">
-                                    <a href="https://www.decathlon.fr/p/canne-a-peche-coup-lakeside-1-telescopique-3m-5m/_/R-p-325163" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~15 €)</a>
+                                    <a href="https://www.decathlon.fr/tous-les-sports/peche/cannes-a-peche" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~15 €)</a>
                                 </div>
                             </div>
                         </div>
@@ -165,10 +165,10 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                         <div class="materiel-card">
                             <div class="materiel-icon"><i class="fa-solid fa-circle-notch"></i></div>
                             <div class="materiel-body">
-                                <h4>Fil de pêche (nylon)</h4>
+                                <h4>Fil de pêche</h4>
                                 <p>Un nylon de 0,18 à 0,22 mm de diamètre convient à la plupart des situations en eau douce pour débuter.</p>
                                 <div class="materiel-links">
-                                    <a href="https://www.decathlon.fr/p/nylon-peche-coup-lakeside-100m/_/R-p-325170" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~5 €)</a>
+                                    <a href="https://www.decathlon.fr/tous-les-sports/peche/fils-tresses-fluorocarbones-peche" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~5 €)</a>
                                 </div>
                             </div>
                         </div>
@@ -176,10 +176,10 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                         <div class="materiel-card">
                             <div class="materiel-icon"><i class="fa-solid fa-circle"></i></div>
                             <div class="materiel-body">
-                                <h4>Flotteur & plombs</h4>
+                                <h4>Flotteur</h4>
                                 <p>Le flotteur vous indique quand un poisson mord. Choisissez un kit flotteur + plombs adapté à votre canne.</p>
                                 <div class="materiel-links">
-                                    <a href="https://www.decathlon.fr/p/kit-montage-coup-lakeside/_/R-p-325175" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~8 €)</a>
+                                    <a href="https://www.decathlon.fr/tous-les-sports/peche/flotteurs-bouchons-de-peche" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~8 €)</a>
                                 </div>
                             </div>
                         </div>
@@ -190,7 +190,7 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                                 <h4>Hameçons</h4>
                                 <p>Pour débuter, des hameçons de taille 10 à 14 couvrent la plupart des espèces courantes. Achetez-en en sachet.</p>
                                 <div class="materiel-links">
-                                    <a href="https://www.decathlon.fr/p/hamecon-peche-coup-simple-lakeside-taille-10/_/R-p-325180" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~3 €)</a>
+                                    <a href="https://www.decathlon.fr/tous-les-sports/peche/hamecons-de-peche" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~3 €)</a>
                                 </div>
                             </div>
                         </div>
@@ -201,7 +201,7 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                                 <h4>Appâts</h4>
                                 <p>Pour commencer : des vers de terre (les trouver dans votre jardin ou en acheter en animalerie) ou du pain de mie. Les vers fonctionnent avec quasiment toutes les espèces.</p>
                                 <div class="materiel-links">
-                                    <a href="https://www.decathlon.fr/p/appat-peche-vers-de-vase-1-boite/_/R-p-325185" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~4 €)</a>
+                                    <a href="https://www.decathlon.fr/tous-les-sports/peche/amorces-appats" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~4 €)</a>
                                 </div>
                             </div>
                         </div>
@@ -209,10 +209,10 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                         <div class="materiel-card">
                             <div class="materiel-icon"><i class="fa-solid fa-scissors"></i></div>
                             <div class="materiel-body">
-                                <h4>Boîte de pêche + épuisette</h4>
+                                <h4>Boîte de pêche</h4>
                                 <p>Une petite boîte pour ranger vos accessoires + une épuisette pour sortir les poissons de l'eau proprement sans les blesser.</p>
                                 <div class="materiel-links">
-                                    <a href="https://www.decathlon.fr/p/epuisette-peche-coup-lakeside-manche-2m/_/R-p-325190" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~12 €)</a>
+                                    <a href="https://www.decathlon.fr/search?Ntt=boite+de+peche" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~12 €)</a>
                                 </div>
                             </div>
                         </div>
@@ -229,7 +229,7 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                     <h3>Le matériel optionnel (mais utile)</h3>
                     <ul class="doc-list">
                         <li><strong>Seau ou nasse de gardiennage</strong> — pour garder les poissons vivants avant de les relâcher</li>
-                        <li><strong>Siège de pêche pliable</strong> — pour les longues sessions (<a href="https://www.decathlon.fr/browse/c0-peche/_/N-1dqf6e5" target="_blank" rel="noopener">voir chez Decathlon</a>)</li>
+                        <li><strong>Siège de pêche pliable</strong> — pour les longues sessions (<a href="https://www.decathlon.fr/search?Ntt=siege+peche+pliable" target="_blank" rel="noopener">voir chez Decathlon</a>)</li>
                         <li><strong>Tapis de réception</strong> — protège le poisson quand vous l'amenez à terre</li>
                         <li><strong>Pince à hameçon</strong> — pour décrocher les hameçons sans blesser le poisson ni vos doigts</li>
                     </ul>
@@ -273,7 +273,7 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                     <h3>Comment trouver les plans d'eau autorisés ?</h3>
                     <ul class="doc-list">
                         <li>Le site de votre <strong>AAPPMA locale</strong> (association de pêche de votre commune ou département) liste les parcours accessibles avec votre carte</li>
-                        <li>Le site <a href="https://www.cartepeche.fr" target="_blank" rel="noopener">cartepeche.fr</a> — carte officielle de toutes les AAPPMA de France</li>
+                        <li>Le site <a href="https://www.cartedepeche.fr" target="_blank" rel="noopener">cartedepeche.fr</a> — carte officielle de toutes les AAPPMA de France</li>
                         <li>Les <strong>étangs communaux</strong> souvent peu fréquentés et idéaux pour débuter</li>
                         <li>Les <strong>canaux navigables</strong> (Voies Navigables de France) — accessibles avec une carte nationale</li>
                     </ul>
@@ -343,7 +343,7 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                             <div class="regle-icon"><i class="fa-solid fa-id-card"></i></div>
                             <h4>Carte de pêche obligatoire</h4>
                             <p>Toute personne de plus de 12 ans doit être titulaire d'une carte de pêche (adhésion AAPPMA). Sans elle, vous risquez une amende.</p>
-                            <a href="https://www.cartepeche.fr" target="_blank" rel="noopener" class="btn-link btn-link--blue">Acheter en ligne →</a>
+                            <a href="https://www.cartedepeche.fr" target="_blank" rel="noopener" class="btn-link btn-link--blue">Acheter en ligne →</a>
                         </div>
                         <div class="regle-card">
                             <div class="regle-icon"><i class="fa-solid fa-calendar-days"></i></div>
@@ -415,8 +415,7 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                     <h3>Comment vérifier ?</h3>
                     <ul class="doc-list">
                         <li>Consultez l'<a href="https://inpn.mnhn.fr/accueil/index" target="_blank" rel="noopener">Inventaire National du Patrimoine Naturel (INPN)</a> — base officielle des espèces protégées en France</li>
-                        <li>Le site de la <a href="https://www.federationpeche.fr/les-especes" target="_blank" rel="noopener">Fédération Nationale de la Pêche</a> liste les espèces par région</li>
-                        <li>En cas de doute sur le terrain : <strong>relâchez toujours immédiatement</strong></li>
+                      ca marche âs cpomme inpn qui c fait hack retire ca zbi
                     </ul>
                 </section>
 
@@ -482,7 +481,7 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                         <div class="video-card">
                             <div class="video-embed">
                                 <iframe
-                                    src="https://www.youtube.com/embed/M9SjRz66kB0"
+                                    src="https://www.youtube.com/watch?v=rvJ1kf_Xkhk0"
                                     title="Apprendre à pêcher pour les débutants"
                                     frameborder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -500,7 +499,7 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                         <div class="video-card">
                             <div class="video-embed">
                                 <iframe
-                                    src="https://www.youtube.com/embed/nxJH7-8tqiI"
+                                    src="https://www.youtube.com/watch?v=dT-vTiWicoc"
                                     title="Matériel de pêche débutant"
                                     frameborder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -518,7 +517,7 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                         <div class="video-card">
                             <div class="video-embed">
                                 <iframe
-                                    src="https://www.youtube.com/embed/xJ7pFMVmVto"
+                                    src="https://www.youtube.com/watch?v=Fr7r6WpRyXI"
                                     title="Réglementation pêche France"
                                     frameborder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -537,8 +536,8 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                     <div class="doc-callout doc-callout--blue">
                         <i class="fa-brands fa-youtube"></i>
                         <div>
-                            <strong>Chaînes YouTube recommandées</strong>
-                            <p>Pour aller plus loin : <a href="https://www.youtube.com/@FishingChaos" target="_blank" rel="noopener">Fishing Chaos</a>, <a href="https://www.youtube.com/@carpcontact" target="_blank" rel="noopener">Carp Contact</a>, et les vidéos officielles de la <a href="https://www.youtube.com/@FedNatPeche" target="_blank" rel="noopener">Fédération Nationale de Pêche</a>.</p>
+                            <strong>playliste YouTube recommandées</strong>
+                            <p>Pour aller plus loin : <a href="https://youtube.com/playlist?list=PLxfzG8LoCw720ACkarY_WWMR0tnAMxwSN&si=dI3coNUT_jAfDT5C" target="_blank" rel="noopener">Fishing Chaos</a>, <a href="https://www.youtube.com/@carpcontact" target="_blank" rel="noopener">Carp Contact</a>, et les vidéos officielles de la <a href="https://www.youtube.com/@FedNatPeche" target="_blank" rel="noopener">Fédération Nationale de Pêche</a>.</p>
                         </div>
                     </div>
                 </section>
