@@ -64,9 +64,13 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                 <i class="fa-regular fa-circle-user"></i>
                 <span>Profil</span>
             </a>
-            <a href="/parametres" class="nav-link">
+            <a href="/parametre" class="nav-link">
                 <i class="fa-solid fa-gear"></i>
                 <span>Paramètre</span>
+            </a>
+            <a href="/documentation" class="nav-link">
+                <i class="fa-solid fa-book"></i>
+                <span>Documentation</span>
             </a>
         </nav>
 
@@ -101,6 +105,7 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                 <div class="search-bar">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="search-input" placeholder="Rechercher un lac ...">
+                    <div class="search-suggestions" id="search-suggestions"></div>
                 </div>
             </div>
 
@@ -219,7 +224,9 @@ let currentLayer = L.tileLayer(
 ).addTo(map);
 
 // Groupe qui contiendra tous les marqueurs de spots (facile à vider/recharger)
-const spotsLayer = L.layerGroup().addTo(map);
+const spotsLayer  = L.layerGroup().addTo(map);
+let allSpots       = [];  // copie des données des spots (pour la recherche)
+const markersById  = {};  // accès rapide à un marqueur depuis l'id du spot
 
 /* ================================================================
    SIDEBAR — ouvrir / fermer
@@ -285,6 +292,15 @@ function formatDate(dateStr) {
     return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+// Enlève les accents et met en minuscule, pour comparer du texte
+// sans se soucier des accents (ex: "lac de la foret" trouve "Lac de la Forêt")
+function normalizeText(str) {
+    return (str || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
 /* ================================================================
    NOTE EN POURCENTAGE — convertit la note sur 5 en pourcentage
    et choisit une couleur selon le résultat (vert / orange / rouge)
@@ -318,12 +334,139 @@ function applyRatingBadge(el, rating) {
 }
 
 /* ================================================================
+   RECHERCHE DE LIEU — autocomplétion + zoom sur la carte
+   API gratuite OpenStreetMap Nominatim, sans clé nécessaire
+   ================================================================ */
+const searchInput       = document.getElementById('search-input');
+const searchSuggestions = document.getElementById('search-suggestions');
+let searchTimeout = null;
+
+searchInput.addEventListener('input', () => {
+    const query = searchInput.value.trim();
+
+    if (query.length < 2) {
+        hideSuggestions();
+        return;
+    }
+
+    // Les spots déjà ajoutés par les utilisateurs s'affichent tout de suite
+    const localMatches = filterLocalSpots(query);
+    renderSuggestions(localMatches, []);
+
+    // On attend que l'utilisateur arrête de taper avant d'interroger l'API
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => fetchSuggestions(query, localMatches), 400);
+});
+
+// Recherche dans les spots déjà ajoutés (nom ou région), sans tenir compte des accents
+function filterLocalSpots(query) {
+    const q = normalizeText(query);
+    return allSpots
+        .filter(spot =>
+            normalizeText(spot.name).includes(q) ||
+            normalizeText(spot.region).includes(q)
+        )
+        .slice(0, 5);
+}
+
+async function fetchSuggestions(query, localMatches) {
+    try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=8&accept-language=fr&countrycodes=fr,be`;
+        const res    = await fetch(url);
+        const places = await res.json();
+        renderSuggestions(localMatches, places);
+    } catch (err) {
+        console.error('Erreur de recherche :', err);
+        renderSuggestions(localMatches, []);
+    }
+}
+
+function renderSuggestions(spots, places) {
+    if (!spots.length && !places.length) {
+        searchSuggestions.innerHTML = '<div class="search-no-result">Aucun résultat trouvé</div>';
+        searchSuggestions.classList.add('visible');
+        return;
+    }
+
+    // Spots déjà ajoutés sur WebPêche (mis en avant avec une icône poisson)
+    const spotsHtml = spots.map(s => `
+        <div class="search-suggestion-item" data-type="spot" data-id="${s.id}" data-lat="${s.latitude}" data-lon="${s.longitude}">
+            <i class="fa-solid fa-fish"></i>
+            <span>${escapeHtml(s.name)}${s.region ? ' — ' + escapeHtml(s.region) : ''}</span>
+        </div>
+    `).join('');
+
+    // Lieux trouvés via la recherche géographique générale
+    const placesHtml = places.map(p => `
+        <div class="search-suggestion-item" data-type="place" data-lat="${p.lat}" data-lon="${p.lon}">
+            <i class="fa-solid fa-location-dot"></i>
+            <span>${escapeHtml(p.display_name)}</span>
+        </div>
+    `).join('');
+
+    searchSuggestions.innerHTML = spotsHtml + placesHtml;
+    searchSuggestions.classList.add('visible');
+
+    searchSuggestions.querySelectorAll('.search-suggestion-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const lat  = parseFloat(item.dataset.lat);
+            const lon  = parseFloat(item.dataset.lon);
+
+            if (item.dataset.type === 'spot') {
+                goToSpot(parseInt(item.dataset.id, 10), lat, lon);
+            } else {
+                goToLocation(lat, lon, item.querySelector('span').textContent);
+            }
+        });
+    });
+}
+
+// Va vers un spot déjà existant et ouvre sa popup
+function goToSpot(id, lat, lon) {
+    map.setView([lat, lon], 14);
+    hideSuggestions();
+    searchInput.value = '';
+
+    const marker = markersById[id];
+    if (marker) marker.openPopup();
+}
+
+// Va vers un lieu trouvé par la recherche géographique (sans créer de marqueur)
+function goToLocation(lat, lon, label) {
+    map.setView([lat, lon], 12);
+    hideSuggestions();
+    searchInput.value = label;
+}
+
+function hideSuggestions() {
+    searchSuggestions.classList.remove('visible');
+    searchSuggestions.innerHTML = '';
+}
+
+// Appui sur "Entrée" → va directement au premier résultat affiché
+searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const firstItem = searchSuggestions.querySelector('.search-suggestion-item');
+        if (firstItem) firstItem.click();
+    }
+});
+
+// Ferme les suggestions si on clique en dehors de la barre de recherche
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-bar')) {
+        hideSuggestions();
+    }
+});
+
+/* ================================================================
    SPOTS — chargement + affichage des marqueurs sur la carte
    ================================================================ */
 async function loadSpots() {
     try {
         const res   = await fetch('/api/spots');
         const spots = await res.json();
+        allSpots = spots;
         spotsLayer.clearLayers();
         spots.forEach(addSpotMarker);
     } catch (err) {
@@ -360,6 +503,7 @@ function popupHtml(spot) {
 function addSpotMarker(spot) {
     const marker = L.marker([spot.latitude, spot.longitude]).addTo(spotsLayer);
     marker.bindPopup(popupHtml(spot), { minWidth: 220 });
+    markersById[spot.id] = marker;
 }
 
 // Premier chargement des spots existants (depuis la base de données)
@@ -470,6 +614,7 @@ addSpotForm.addEventListener('submit', async (e) => {
 
         if (spot.error) { alert(spot.error); return; }
 
+        allSpots.push(spot);
         addSpotMarker(spot);
         closeAddSpotModal();
         cancelPlacement();

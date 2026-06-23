@@ -43,6 +43,21 @@ switch ($uri) {
         require_once __DIR__ . '/../src/views/accueil.php';
         break;
 
+    // Page profil de l'utilisateur connecté
+    case '/profil':
+        require_once __DIR__ . '/../src/views/profil.php';
+        break;
+
+    // Page paramètres de l'utilisateur connecté
+    case '/parametre':
+        require_once __DIR__ . '/../src/views/parametre.php';
+        break;
+
+    // Page de documentation / aide — accessible à tous
+    case '/documentation':
+        require_once __DIR__ . '/../src/views/documentation.php';
+        break;
+
     // --------------------------------------------------------
     // API — Spots de pêche
     // --------------------------------------------------------

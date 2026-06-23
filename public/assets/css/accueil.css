@@ -272,7 +272,8 @@ body {
 
 /* Barre de recherche */
 .search-bar {
-    width: 280px;
+    position: relative;
+    width: 320px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -296,6 +297,72 @@ body {
 }
 
 .search-bar input::placeholder {
+    color: var(--text-muted);
+}
+
+/* ── Liste déroulante de suggestions (autocomplétion) ── */
+.search-suggestions {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border-radius: 10px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.2);
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 600;
+    display: none;
+}
+
+.search-suggestions.visible {
+    display: block;
+}
+
+.search-suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 14px;
+    font-size: 0.83rem;
+    color: var(--text-main);
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.12s;
+}
+
+.search-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.search-suggestion-item:hover {
+    background: var(--btn-icon-hover);
+}
+
+.search-suggestion-item i {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    flex-shrink: 0;
+}
+
+/* Les spots déjà ajoutés sur WebPêche ressortent un peu plus */
+.search-suggestion-item[data-type="spot"] i {
+    color: var(--text-accent);
+}
+
+.search-suggestion-item[data-type="spot"] {
+    font-weight: 600;
+}
+
+.search-suggestion-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.search-no-result {
+    padding: 12px 14px;
+    font-size: 0.82rem;
     color: var(--text-muted);
 }
 
@@ -815,8 +882,22 @@ body {
 }
 
 @media (max-width: 480px) {
-    .placement-banner span {
-        display: none; /* on garde juste l'icône + le bouton annuler sur très petit écran */
+    .placement-banner {
+        font-size: 0.72rem;
+        padding: 9px 12px;
+        gap: 8px;
+        max-width: 94vw;
+    }
+
+    .placement-banner i {
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    .placement-cancel {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
     }
 
     .panel-vote-row {

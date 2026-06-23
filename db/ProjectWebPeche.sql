@@ -1,7 +1,7 @@
 -- ============================================================
--- Base de données : WebPêche
--- Créez la base avec : CREATE DATABASE webpeche;
--- Puis importez ce fichier : mysql -u root -p webpeche < ProjectWebPeche.sql
+-- Base de données : WebPêche (complète)
+-- Créez la base avec : CREATE DATABASE projectwebpeche;
+-- Puis importez ce fichier : mysql -u root -p projectwebpeche < ProjectWebPeche.sql
 -- ============================================================
 
 SET NAMES utf8mb4;
@@ -33,23 +33,37 @@ CREATE TABLE IF NOT EXISTS `fishing_spots` (
     `region`        VARCHAR(100)    DEFAULT NULL,       -- ex: Alpes-Maritimes
     `species`       VARCHAR(255)    DEFAULT NULL,       -- ex: truite fario, brochet
     `image`         VARCHAR(255)    DEFAULT NULL,       -- image du spot
-    `rating`        DECIMAL(2,1)    DEFAULT 0.0,        -- note moyenne
+    `rating`        DECIMAL(2,1)    DEFAULT 0.0,        -- note moyenne (sur 5)
     `created_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------------------
--- TABLE : ratings  (notes données par les utilisateurs)
+-- TABLE : ratings  (votes like/dislike → note de 1 à 5)
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `ratings` (
     `id`            INT(11)         NOT NULL AUTO_INCREMENT,
     `user_id`       INT(11)         NOT NULL,
     `spot_id`       INT(11)         NOT NULL,
-    `score`         TINYINT(1)      NOT NULL,           -- note de 1 à 5
+    `score`         TINYINT(1)      NOT NULL,           -- note de 1 à 5 (like=5, dislike=1)
     `created_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `unique_rating` (`user_id`, `spot_id`),  -- 1 note par user par spot
+    UNIQUE KEY `unique_rating` (`user_id`, `spot_id`),  -- 1 vote par user par spot
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`spot_id`) REFERENCES `fishing_spots`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
+-- TABLE : spot_comments  (avis / commentaires texte sur un spot)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `spot_comments` (
+    `id`            INT(11)      NOT NULL AUTO_INCREMENT,
+    `user_id`       INT(11)      NOT NULL,
+    `spot_id`       INT(11)      NOT NULL,
+    `comment`       TEXT         NOT NULL,
+    `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`spot_id`) REFERENCES `fishing_spots`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
