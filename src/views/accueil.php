@@ -109,14 +109,25 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                 </div>
             </div>
 
-            <!-- Groupe droite : modifier + 3 petits points -->
+            <!-- Groupe droite : modifier + filtrer par poisson -->
             <div class="topbar-group topbar-right">
                 <button class="btn-icon" id="btn-add-spot" title="Ajouter un spot de pêche">
                     <i class="fa-solid fa-pen"></i>
                 </button>
-                <button class="btn-icon" title="Plus d'options">
-                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                <button class="btn-filter-pill" id="btn-filter" title="Filtrer par poisson">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Filtrer</span>
+                    <span class="filter-badge" id="filter-badge"></span>
                 </button>
+
+                <!-- Panneau déroulant de filtre par espèce de poisson -->
+                <div class="filter-panel" id="filter-panel">
+                    <div class="filter-panel-header">
+                        <span><i class="fa-solid fa-filter"></i> Filtrer par poisson</span>
+                        <button type="button" id="filter-reset">Réinitialiser</button>
+                    </div>
+                    <div class="filter-list" id="filter-list"></div>
+                </div>
             </div>
 
         </div>
@@ -153,15 +164,20 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
     <form id="add-spot-form" class="modal-form">
         <input type="hidden" name="latitude"  id="spot-lat">
         <input type="hidden" name="longitude" id="spot-lng">
+        <input type="hidden" name="region"    id="spot-region">
 
         <label>Nom du spot *</label>
         <input type="text" name="name" placeholder="Ex : Lac de la Forêt" required maxlength="100">
 
-        <label>Région</label>
-        <input type="text" name="region" placeholder="Ex : Alpes-Maritimes" maxlength="100">
+        <label>Lieu <span class="optional-tag">(détecté automatiquement)</span></label>
+        <div class="modal-detected-location" id="spot-region-preview">
+            <i class="fa-solid fa-location-dot"></i>
+            <span id="spot-region-text">Détection du lieu...</span>
+        </div>
 
         <label>Espèces de poissons <span class="optional-tag">(facultatif)</span></label>
-        <input type="text" name="species" placeholder="Laissez vide si vous ne savez pas" maxlength="255">
+        <input type="text" name="species" id="spot-species" placeholder="Laissez vide si vous ne savez pas" maxlength="255">
+        <div class="fish-chips" id="fish-chips"></div>
 
         <label>Description <span class="optional-tag">(facultatif)</span></label>
         <textarea name="description" placeholder="Accès, conseils, ambiance du lieu..."></textarea>
@@ -213,14 +229,17 @@ const tileDark  = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png
 
 const map = L.map('map', {
     zoomControl: false,
-    attributionControl: false
+    attributionControl: false,
+    minZoom: 3,                              // empêche de trop dézoomer (carte qui se répète)
+    maxBounds: [[-90, -180], [90, 180]],      // empêche de glisser au-delà d'une seule carte du monde
+    maxBoundsViscosity: 1.0
 }).setView([46.6, 2.3], 6); // France entière
 
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
 let currentLayer = L.tileLayer(
     savedTheme === 'dark' ? tileDark : tileLight,
-    { maxZoom: 19, detectRetina: true }
+    { maxZoom: 19, detectRetina: true, noWrap: true }
 ).addTo(map);
 
 // Groupe qui contiendra tous les marqueurs de spots (facile à vider/recharger)
@@ -261,7 +280,7 @@ btnLight.addEventListener('click', () => {
     btnDarkT.classList.remove('active');
 
     map.removeLayer(currentLayer);
-    currentLayer = L.tileLayer(tileLight, { maxZoom: 19, detectRetina: true }).addTo(map);
+    currentLayer = L.tileLayer(tileLight, { maxZoom: 19, detectRetina: true, noWrap: true }).addTo(map);
 
     localStorage.setItem('webpeche_theme', 'light');
 });
@@ -273,7 +292,7 @@ btnDarkT.addEventListener('click', () => {
     btnLight.classList.remove('active');
 
     map.removeLayer(currentLayer);
-    currentLayer = L.tileLayer(tileDark, { maxZoom: 19, detectRetina: true }).addTo(map);
+    currentLayer = L.tileLayer(tileDark, { maxZoom: 19, detectRetina: true, noWrap: true }).addTo(map);
 
     localStorage.setItem('webpeche_theme', 'dark');
 });
@@ -485,13 +504,12 @@ function popupHtml(spot) {
             <strong>${escapeHtml(spot.name)}</strong><br>
             <small>${ratingBadgeHtml(spot.rating)}${region}</small><br>
             <small>${species}</small>
+
+            <div class="popup-stars" data-selected="0">
+                ${buildStarsHtml(spot.id)}
+            </div>
+
             <div class="popup-actions">
-                <button class="popup-btn like" onclick="voteSpot(${spot.id}, 'like', this)">
-                    👍 <span class="like-count">${spot.likes ?? 0}</span>
-                </button>
-                <button class="popup-btn dislike" onclick="voteSpot(${spot.id}, 'dislike', this)">
-                    👎 <span class="dislike-count">${spot.dislikes ?? 0}</span>
-                </button>
                 <button class="popup-btn more" onclick="openSpotPanel(${spot.id})">
                     Voir plus
                 </button>
@@ -510,23 +528,245 @@ function addSpotMarker(spot) {
 loadSpots();
 
 /* ================================================================
-   VOTES — like / dislike depuis la popup
+   CHIPS DE POISSONS — suggestions cliquables dans le formulaire
    ================================================================ */
-async function voteSpot(id, vote, btn) {
+const FISH_LIST = [
+    'Truite fario', 'Carpe', 'Brochet', 'Sandre', 'Perche', 'Black-bass',
+    'Silure', 'Gardon', 'Tanche', 'Brème', 'Anguille', 'Ombre commun',
+    'Saumon de fontaine', 'Goujon', 'Chevesne', 'Barbeau', 'Ablette',
+    'Rotengle', 'Mulet', 'Bar'
+];
+const FISH_INITIAL_COUNT = 8;
+
+const fishChipsContainer = document.getElementById('fish-chips');
+const speciesInput       = document.getElementById('spot-species');
+
+function renderFishChips(expanded = false) {
+    const list     = expanded ? FISH_LIST : FISH_LIST.slice(0, FISH_INITIAL_COUNT);
+    const selected = speciesInput.value.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+
+    let html = list.map(fish => `
+        <button type="button" class="fish-chip ${selected.includes(fish.toLowerCase()) ? 'selected' : ''}" data-fish="${fish}">
+            ${fish}
+        </button>
+    `).join('');
+
+    if (!expanded && FISH_LIST.length > FISH_INITIAL_COUNT) {
+        html += `
+            <button type="button" class="fish-chip fish-chip-more" id="fish-chip-more">
+                <i class="fa-solid fa-plus"></i> Plus
+            </button>
+        `;
+    }
+
+    fishChipsContainer.innerHTML = html;
+}
+
+renderFishChips();
+
+fishChipsContainer.addEventListener('click', (e) => {
+    const moreBtn = e.target.closest('#fish-chip-more');
+    if (moreBtn) {
+        renderFishChips(true);
+        return;
+    }
+
+    const chip = e.target.closest('.fish-chip');
+    if (!chip) return;
+
+    const fish    = chip.dataset.fish;
+    let   current = speciesInput.value.split(',').map(s => s.trim()).filter(Boolean);
+    const idx     = current.findIndex(s => s.toLowerCase() === fish.toLowerCase());
+
+    if (idx >= 0) {
+        current.splice(idx, 1);
+        chip.classList.remove('selected');
+    } else {
+        current.push(fish);
+        chip.classList.add('selected');
+    }
+
+    speciesInput.value = current.join(', ');
+});
+
+/* ================================================================
+   FILTRE PAR ESPÈCE — sélection multiple
+   Affiche/cache les spots de la carte selon les poissons choisis
+   ================================================================ */
+const activeFishFilters = new Set();
+
+const btnFilter   = document.getElementById('btn-filter');
+const filterPanel = document.getElementById('filter-panel');
+const filterList  = document.getElementById('filter-list');
+const filterBadge = document.getElementById('filter-badge');
+
+btnFilter.addEventListener('click', (e) => {
+    e.stopPropagation();
+    filterPanel.classList.contains('visible') ? closeFilterPanel() : openFilterPanel();
+});
+
+function openFilterPanel() {
+    renderFilterList();
+    filterPanel.classList.add('visible');
+}
+
+function closeFilterPanel() {
+    filterPanel.classList.remove('visible');
+}
+
+// Liste des espèces réellement présentes parmi les spots déjà ajoutés
+function getAvailableSpecies() {
+    const set = new Set();
+    allSpots.forEach(spot => {
+        if (!spot.species) return;
+        spot.species.split(',').forEach(s => {
+            const trimmed = s.trim();
+            if (trimmed) set.add(trimmed);
+        });
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
+}
+
+function renderFilterList() {
+    const species = getAvailableSpecies();
+
+    if (!species.length) {
+        filterList.innerHTML = '<p class="filter-empty">Aucune espèce renseignée pour le moment.</p>';
+        return;
+    }
+
+    filterList.innerHTML = species.map(fish => `
+        <button type="button" class="filter-item ${activeFishFilters.has(fish) ? 'active' : ''}" data-fish="${escapeHtml(fish)}">
+            <i class="fa-solid fa-fish"></i>
+            <span>${escapeHtml(fish)}</span>
+            <i class="fa-solid fa-check filter-check"></i>
+        </button>
+    `).join('');
+}
+
+filterList.addEventListener('click', (e) => {
+    const item = e.target.closest('.filter-item');
+    if (!item) return;
+
+    const fish = item.dataset.fish;
+
+    if (activeFishFilters.has(fish)) {
+        activeFishFilters.delete(fish);
+    } else {
+        activeFishFilters.add(fish);
+    }
+
+    applyFishFilter();
+    renderFilterList();
+    updateFilterBadge();
+});
+
+document.getElementById('filter-reset').addEventListener('click', () => {
+    activeFishFilters.clear();
+    applyFishFilter();
+    renderFilterList();
+    updateFilterBadge();
+});
+
+// Affiche les spots correspondant à AU MOINS UN des poissons sélectionnés
+function applyFishFilter() {
+    const queries = Array.from(activeFishFilters).map(normalizeText);
+
+    allSpots.forEach(spot => {
+        const marker = markersById[spot.id];
+        if (!marker) return;
+
+        const spotSpecies = normalizeText(spot.species || '');
+        const matches = queries.length === 0 || queries.some(q => spotSpecies.includes(q));
+
+        if (matches && !spotsLayer.hasLayer(marker)) {
+            spotsLayer.addLayer(marker);
+        } else if (!matches && spotsLayer.hasLayer(marker)) {
+            spotsLayer.removeLayer(marker);
+        }
+    });
+}
+
+// Petit badge rond affichant le nombre de filtres actifs sur le bouton
+function updateFilterBadge() {
+    if (activeFishFilters.size > 0) {
+        filterBadge.textContent = activeFishFilters.size;
+        filterBadge.classList.add('visible');
+    } else {
+        filterBadge.classList.remove('visible');
+    }
+}
+
+// Ferme le panneau de filtre si on clique en dehors
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.topbar-right')) {
+        closeFilterPanel();
+    }
+});
+
+/* ================================================================
+   ÉTOILES — note rapide (1 à 5) depuis la popup ou le panneau
+   ================================================================ */
+
+// Construit le HTML des 5 étoiles cliquables pour un spot donné
+function buildStarsHtml(spotId) {
+    return [1, 2, 3, 4, 5].map(n => `
+        <i class="fa-solid fa-star star-icon"
+           data-value="${n}"
+           onmouseenter="previewStars(this, ${n})"
+           onmouseleave="resetStarsPreview(this)"
+           onclick="rateSpotStars(${spotId}, ${n}, this)"></i>
+    `).join('');
+}
+
+// Aperçu au survol : remplit les étoiles jusqu'à celle survolée
+function previewStars(starEl, value) {
+    const container = starEl.closest('.popup-stars, .panel-stars');
+    if (!container) return;
+    container.querySelectorAll('.star-icon').forEach((s, i) => {
+        s.classList.toggle('filled', i < value);
+    });
+}
+
+// Quand la souris quitte les étoiles, on revient à la note réellement choisie
+function resetStarsPreview(starEl) {
+    const container = starEl.closest('.popup-stars, .panel-stars');
+    if (!container) return;
+    const selected = parseInt(container.dataset.selected || '0', 10);
+    container.querySelectorAll('.star-icon').forEach((s, i) => {
+        s.classList.toggle('filled', i < selected);
+    });
+}
+
+// Envoie la note choisie au serveur et met à jour l'affichage partout où ce spot apparaît
+async function rateSpotStars(id, score, starEl) {
+    const container = starEl.closest('.popup-stars, .panel-stars');
+    if (container) {
+        container.dataset.selected = score;
+        container.querySelectorAll('.star-icon').forEach((s, i) => {
+            s.classList.toggle('filled', i < score);
+        });
+    }
+
     try {
         const res = await fetch('/api/spot/rate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `spot_id=${id}&vote=${vote}`
+            body: `spot_id=${id}&score=${score}`
         });
         const data = await res.json();
 
         if (data.error) { alert(data.error); return; }
 
-        const popupEl = btn.closest('.spot-popup');
-        popupEl.querySelector('.like-count').textContent    = data.likes;
-        popupEl.querySelector('.dislike-count').textContent = data.dislikes;
-        applyRatingBadge(popupEl.querySelector('.spot-rating-value'), data.rating);
+        // Met à jour le badge de pourcentage dans la popup, si elle est ouverte
+        const popupBadge = document.querySelector(`.spot-popup[data-spot-id="${id}"] .spot-rating-value`);
+        if (popupBadge) applyRatingBadge(popupBadge, data.rating);
+
+        // Met à jour le badge dans le panneau "Voir plus", s'il affiche ce même spot
+        if (spotPanel.dataset.currentSpot === String(id)) {
+            const panelBadge = document.querySelector('.panel-meta .spot-rating-value');
+            if (panelBadge) applyRatingBadge(panelBadge, data.rating);
+        }
     } catch (err) {
         console.error('Erreur lors du vote :', err);
     }
@@ -581,8 +821,33 @@ map.on('click', (e) => {
     document.getElementById('spot-lat').value = e.latlng.lat;
     document.getElementById('spot-lng').value = e.latlng.lng;
 
+    detectLocation(e.latlng.lat, e.latlng.lng);
+
     openAddSpotModal();
 });
+
+// Devine automatiquement le lieu (adresse) à partir des coordonnées cliquées,
+// pour ne pas obliger l'utilisateur à le taper lui-même
+async function detectLocation(lat, lon) {
+    const regionInput   = document.getElementById('spot-region');
+    const regionPreview = document.getElementById('spot-region-text');
+
+    regionPreview.textContent = 'Détection du lieu...';
+    regionInput.value = '';
+
+    try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=fr&zoom=16`;
+        const res  = await fetch(url);
+        const data = await res.json();
+
+        const label = data.display_name || 'Lieu non déterminé';
+        regionInput.value          = label;
+        regionPreview.textContent  = label;
+    } catch (err) {
+        console.error('Erreur de géocodage inverse :', err);
+        regionPreview.textContent = 'Lieu non déterminé';
+    }
+}
 
 function openAddSpotModal() {
     addSpotOverlay.classList.add('visible');
@@ -598,6 +863,8 @@ function closeAddSpotFlow() {
     closeAddSpotModal();
     cancelPlacement();
     addSpotForm.reset();
+    document.getElementById('spot-region-text').textContent = 'Détection du lieu...';
+    renderFishChips();
 }
 
 document.getElementById('add-spot-cancel').addEventListener('click', closeAddSpotFlow);
@@ -619,6 +886,8 @@ addSpotForm.addEventListener('submit', async (e) => {
         closeAddSpotModal();
         cancelPlacement();
         addSpotForm.reset();
+        document.getElementById('spot-region-text').textContent = 'Détection du lieu...';
+        renderFishChips();
     } catch (err) {
         console.error('Erreur lors de l\'ajout du spot :', err);
         alert("Une erreur est survenue, le spot n'a pas pu être ajouté.");
@@ -631,6 +900,8 @@ addSpotForm.addEventListener('submit', async (e) => {
 const spotPanel        = document.getElementById('spot-panel');
 const spotPanelBody    = document.getElementById('spot-panel-body');
 const spotPanelOverlay = document.getElementById('spot-panel-overlay');
+
+let currentSpotComments = []; // avis du spot actuellement affiché (pour le filtre par étoiles)
 
 async function openSpotPanel(id) {
     spotPanel.classList.add('open');
@@ -646,6 +917,7 @@ async function openSpotPanel(id) {
             return;
         }
 
+        spotPanel.dataset.currentSpot = spot.id;
         renderSpotPanel(spot);
     } catch (err) {
         spotPanelBody.innerHTML = '<p class="panel-loading">Erreur de chargement.</p>';
@@ -657,17 +929,7 @@ function renderSpotPanel(spot) {
     const region       = spot.region       || 'Non renseignée';
     const description = spot.description || 'Aucune description pour le moment.';
 
-    const commentsHtml = spot.comments.length
-        ? spot.comments.map(c => `
-            <div class="review-item">
-                <div class="review-header">
-                    <span class="review-author">${escapeHtml(c.username)}</span>
-                    <span class="review-date">${formatDate(c.created_at)}</span>
-                </div>
-                <p class="review-text">${escapeHtml(c.comment)}</p>
-            </div>
-        `).join('')
-        : '<p class="no-reviews">Aucun avis pour le moment. Soyez le premier à en laisser un !</p>';
+    currentSpotComments = spot.comments;
 
     spotPanelBody.innerHTML = `
         <h2>${escapeHtml(spot.name)}</h2>
@@ -678,44 +940,66 @@ function renderSpotPanel(spot) {
         <p class="panel-species">🐟 ${escapeHtml(species)}</p>
         <p class="panel-description">${escapeHtml(description)}</p>
 
-        <div class="panel-vote-row">
-            <button class="popup-btn like" onclick="voteSpotPanel(${spot.id}, 'like')">
-                👍 J'aime (<span class="panel-like-count">${spot.likes}</span>)
-            </button>
-            <button class="popup-btn dislike" onclick="voteSpotPanel(${spot.id}, 'dislike')">
-                👎 Je n'aime pas (<span class="panel-dislike-count">${spot.dislikes}</span>)
-            </button>
+        <div class="panel-rate-block">
+            <span class="panel-vote-label">Votre note :</span>
+            <div class="panel-stars" data-selected="0">${buildStarsHtml(spot.id)}</div>
         </div>
 
         <hr>
 
-        <h3>Avis (${spot.comments.length})</h3>
-        <div class="reviews-list">${commentsHtml}</div>
+        <div class="reviews-header">
+            <h3>Avis (<span id="reviews-count">${spot.comments.length}</span>)</h3>
+            <div class="review-filter" id="review-filter">
+                <button type="button" class="review-filter-btn active" data-filter="all">Tout</button>
+                <button type="button" class="review-filter-btn" data-filter="5">5★</button>
+                <button type="button" class="review-filter-btn" data-filter="4">4★</button>
+                <button type="button" class="review-filter-btn" data-filter="3">3★</button>
+                <button type="button" class="review-filter-btn" data-filter="2">2★</button>
+                <button type="button" class="review-filter-btn" data-filter="1">1★</button>
+            </div>
+        </div>
+
+        <div class="reviews-list" id="reviews-list"></div>
 
         <form class="add-review-form" onsubmit="submitReview(event, ${spot.id})">
             <textarea name="comment" placeholder="Partagez votre expérience sur ce spot..." required></textarea>
             <button type="submit" class="btn-auth">Publier mon avis</button>
         </form>
     `;
+
+    renderReviewsList('all');
+
+    document.querySelectorAll('#review-filter .review-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#review-filter .review-filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderReviewsList(btn.dataset.filter);
+        });
+    });
 }
 
-async function voteSpotPanel(id, vote) {
-    try {
-        const res = await fetch('/api/spot/rate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `spot_id=${id}&vote=${vote}`
-        });
-        const data = await res.json();
+// Affiche la liste des avis, filtrée par note en étoiles ("all" = tout afficher)
+function renderReviewsList(filter) {
+    const list = filter === 'all'
+        ? currentSpotComments
+        : currentSpotComments.filter(c => String(c.score) === String(filter));
 
-        if (data.error) { alert(data.error); return; }
+    const reviewsListEl = document.getElementById('reviews-list');
 
-        document.querySelector('.panel-like-count').textContent    = data.likes;
-        document.querySelector('.panel-dislike-count').textContent = data.dislikes;
-        applyRatingBadge(document.querySelector('.panel-meta .spot-rating-value'), data.rating);
-    } catch (err) {
-        console.error('Erreur lors du vote :', err);
-    }
+    reviewsListEl.innerHTML = list.length
+        ? list.map(c => `
+            <div class="review-item">
+                <div class="review-header">
+                    <div class="review-header-left">
+                        <span class="review-author">${escapeHtml(c.username)}</span>
+                        <span class="review-stars-mini">${'★'.repeat(c.score)}${'☆'.repeat(5 - c.score)}</span>
+                    </div>
+                    <span class="review-date">${formatDate(c.created_at)}</span>
+                </div>
+                <p class="review-text">${escapeHtml(c.comment)}</p>
+            </div>
+        `).join('')
+        : '<p class="no-reviews">Aucun avis ne correspond à ce filtre.</p>';
 }
 
 async function submitReview(e, spotId) {
@@ -724,30 +1008,30 @@ async function submitReview(e, spotId) {
     const comment = form.comment.value.trim();
     if (!comment) return;
 
+    const starsContainer = document.querySelector('.panel-stars');
+    const score = parseInt(starsContainer?.dataset.selected || '0', 10);
+
+    if (!score) {
+        alert('Merci de donner une note en étoiles avant de publier votre avis.');
+        return;
+    }
+
     try {
         const res = await fetch('/api/spot/comment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `spot_id=${spotId}&comment=${encodeURIComponent(comment)}`
+            body: `spot_id=${spotId}&score=${score}&comment=${encodeURIComponent(comment)}`
         });
         const data = await res.json();
 
         if (data.error) { alert(data.error); return; }
 
-        const list      = document.querySelector('.reviews-list');
-        const noReviews = list.querySelector('.no-reviews');
-        if (noReviews) noReviews.remove();
+        currentSpotComments.unshift(data);
+        document.getElementById('reviews-count').textContent = currentSpotComments.length;
 
-        const item = document.createElement('div');
-        item.className = 'review-item';
-        item.innerHTML = `
-            <div class="review-header">
-                <span class="review-author">${escapeHtml(data.username)}</span>
-                <span class="review-date">${formatDate(data.created_at)}</span>
-            </div>
-            <p class="review-text">${escapeHtml(data.comment)}</p>
-        `;
-        list.prepend(item);
+        const activeBtn = document.querySelector('#review-filter .review-filter-btn.active');
+        renderReviewsList(activeBtn ? activeBtn.dataset.filter : 'all');
+
         form.reset();
     } catch (err) {
         console.error('Erreur lors de l\'envoi de l\'avis :', err);
@@ -757,11 +1041,13 @@ async function submitReview(e, spotId) {
 function closeSpotPanel() {
     spotPanel.classList.remove('open');
     spotPanelOverlay.classList.remove('visible');
+    spotPanel.dataset.currentSpot = '';
 }
 
 document.getElementById('spot-panel-close').addEventListener('click', closeSpotPanel);
 spotPanelOverlay.addEventListener('click', closeSpotPanel);
 </script>
+
 
 </body>
 </html>

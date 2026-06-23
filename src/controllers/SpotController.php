@@ -1,7 +1,12 @@
 <?php
 // ============================================================
 // src/controllers/SpotController.php
-// Gère les spots de pêche : liste, détail, création, votes, avis
+// Gère les spots de pêche : liste, détail, création, notes (étoiles), avis
+//
+// NOTE IMPORTANTE :
+// La note rapide (étoiles) et l'avis texte partagent maintenant la même
+// table "spot_reviews" (1 ligne par utilisateur et par spot). On peut noter
+// sans écrire de texte (vote rapide), ou noter + écrire un avis complet.
 // ============================================================
 
 require_once __DIR__ . '/../config/database.php';
@@ -22,19 +27,6 @@ class SpotController
             );
             $spots = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // On ajoute les compteurs like/dislike pour chaque spot
-            $stmtVotes = $pdo->prepare(
-                'SELECT SUM(score >= 4) AS likes, SUM(score <= 2) AS dislikes
-                 FROM ratings WHERE spot_id = ?'
-            );
-
-            foreach ($spots as &$spot) {
-                $stmtVotes->execute([$spot['id']]);
-                $votes = $stmtVotes->fetch(PDO::FETCH_ASSOC);
-                $spot['likes']    = (int) ($votes['likes']    ?? 0);
-                $spot['dislikes'] = (int) ($votes['dislikes'] ?? 0);
-            }
-
             $this->json($spots);
         } catch (\Throwable $e) {
             $this->json(['error' => 'Erreur serveur : ' . $e->getMessage()], 500);
@@ -42,7 +34,7 @@ class SpotController
     }
 
     // --------------------------------------------------------
-    // GET /api/spot?id=5 → détail d'un spot + avis + votes
+    // GET /api/spot?id=5 → détail d'un spot + ses avis écrits
     // --------------------------------------------------------
     public function show(): void
     {
@@ -65,32 +57,20 @@ class SpotController
                 return;
             }
 
-            // Compteurs like / dislike
+            // Avis écrits uniquement (ceux qui ont un commentaire texte),
+            // chacun avec sa note en étoiles pour permettre le filtrage côté client
             $stmt = $pdo->prepare(
-                'SELECT SUM(score >= 4) AS likes, SUM(score <= 2) AS dislikes
-                 FROM ratings WHERE spot_id = ?'
-            );
-            $stmt->execute([$id]);
-            $votes = $stmt->fetch(PDO::FETCH_ASSOC);
-            $spot['likes']    = (int) ($votes['likes']    ?? 0);
-            $spot['dislikes'] = (int) ($votes['dislikes'] ?? 0);
-
-            // Avis (commentaires) avec le pseudo de l'auteur
-            $stmt = $pdo->prepare(
-                'SELECT c.comment, c.created_at, u.username
-                 FROM spot_comments c
-                 JOIN users u ON u.id = c.user_id
-                 WHERE c.spot_id = ?
-                 ORDER BY c.created_at DESC'
+                "SELECT r.score, r.comment, r.created_at, u.username
+                 FROM spot_reviews r
+                 JOIN users u ON u.id = r.user_id
+                 WHERE r.spot_id = ? AND r.comment IS NOT NULL AND r.comment <> ''
+                 ORDER BY r.created_at DESC"
             );
             $stmt->execute([$id]);
             $spot['comments'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             $this->json($spot);
         } catch (\Throwable $e) {
-            // On renvoie le vrai message d'erreur pour pouvoir diagnostiquer
-            // (cause la plus fréquente : la table "spot_comments" n'existe pas
-            // encore → lance update_reviews.sql dans ta base de données)
             $this->json(['error' => 'Erreur serveur : ' . $e->getMessage()], 500);
         }
     }
@@ -98,7 +78,6 @@ class SpotController
     // --------------------------------------------------------
     // POST /api/spots → crée un nouveau spot
     // Seul le nom est obligatoire — tout le reste est facultatif
-    // (une personne peut ne pas savoir ce qu'elle a pêché)
     // --------------------------------------------------------
     public function store(): void
     {
@@ -140,8 +119,6 @@ class SpotController
             $stmt = $pdo->prepare('SELECT * FROM fishing_spots WHERE id = ?');
             $stmt->execute([$newId]);
             $spot = $stmt->fetch(PDO::FETCH_ASSOC);
-            $spot['likes']    = 0;
-            $spot['dislikes'] = 0;
 
             $this->json($spot, 201);
         } catch (\Throwable $e) {
@@ -150,8 +127,8 @@ class SpotController
     }
 
     // --------------------------------------------------------
-    // POST /api/spot/rate → "j'aime" / "je n'aime pas" un spot
-    // Un seul vote par utilisateur et par spot (on peut changer d'avis)
+    // POST /api/spot/rate → note rapide en étoiles (1 à 5), sans texte
+    // Un seul vote par utilisateur et par spot (on peut le changer)
     // --------------------------------------------------------
     public function rate(): void
     {
@@ -161,53 +138,35 @@ class SpotController
         }
 
         $spotId = (int) ($_POST['spot_id'] ?? 0);
-        $vote   = $_POST['vote'] ?? '';
+        $score  = (int) ($_POST['score']   ?? 0);
 
-        if (!$spotId || !in_array($vote, ['like', 'dislike'], true)) {
-            $this->json(['error' => 'Requête invalide.'], 400);
+        if (!$spotId || $score < 1 || $score > 5) {
+            $this->json(['error' => 'La note doit être comprise entre 1 et 5 étoiles.'], 400);
             return;
         }
-
-        // "like" = note de 5, "dislike" = note de 1
-        $score = $vote === 'like' ? 5 : 1;
 
         try {
             $pdo = Database::connect();
 
+            // Si l'utilisateur avait déjà laissé un avis avec texte, on garde
+            // son commentaire — on ne met à jour que la note (score)
             $stmt = $pdo->prepare(
-                'INSERT INTO ratings (user_id, spot_id, score)
+                'INSERT INTO spot_reviews (user_id, spot_id, score)
                  VALUES (?, ?, ?)
                  ON DUPLICATE KEY UPDATE score = ?'
             );
             $stmt->execute([$_SESSION['user_id'], $spotId, $score, $score]);
 
-            // Recalcule la note moyenne du spot
-            $stmt = $pdo->prepare('SELECT ROUND(AVG(score), 1) AS avg_rating FROM ratings WHERE spot_id = ?');
-            $stmt->execute([$spotId]);
-            $avg = $stmt->fetch(PDO::FETCH_ASSOC)['avg_rating'] ?? 0;
+            $avg = $this->recalculateRating($pdo, $spotId);
 
-            $pdo->prepare('UPDATE fishing_spots SET rating = ? WHERE id = ?')->execute([$avg, $spotId]);
-
-            // Recompte les votes pour renvoyer des chiffres à jour
-            $stmt = $pdo->prepare(
-                'SELECT SUM(score >= 4) AS likes, SUM(score <= 2) AS dislikes
-                 FROM ratings WHERE spot_id = ?'
-            );
-            $stmt->execute([$spotId]);
-            $votes = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            $this->json([
-                'rating'   => (float) $avg,
-                'likes'    => (int) ($votes['likes']    ?? 0),
-                'dislikes' => (int) ($votes['dislikes'] ?? 0),
-            ]);
+            $this->json(['rating' => $avg]);
         } catch (\Throwable $e) {
             $this->json(['error' => 'Erreur serveur : ' . $e->getMessage()], 500);
         }
     }
 
     // --------------------------------------------------------
-    // POST /api/spot/comment → ajoute un avis (texte) sur un spot
+    // POST /api/spot/comment → publie un avis complet (note + texte)
     // --------------------------------------------------------
     public function comment(): void
     {
@@ -217,6 +176,7 @@ class SpotController
         }
 
         $spotId  = (int) ($_POST['spot_id'] ?? 0);
+        $score   = (int) ($_POST['score']   ?? 0);
         $comment = trim($_POST['comment']  ?? '');
 
         if (!$spotId || $comment === '') {
@@ -224,14 +184,24 @@ class SpotController
             return;
         }
 
+        if ($score < 1 || $score > 5) {
+            $this->json(['error' => 'Merci de donner une note de 1 à 5 étoiles avant de publier votre avis.'], 400);
+            return;
+        }
+
         try {
             $pdo  = Database::connect();
             $stmt = $pdo->prepare(
-                'INSERT INTO spot_comments (user_id, spot_id, comment) VALUES (?, ?, ?)'
+                'INSERT INTO spot_reviews (user_id, spot_id, score, comment)
+                 VALUES (?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE score = ?, comment = ?'
             );
-            $stmt->execute([$_SESSION['user_id'], $spotId, $comment]);
+            $stmt->execute([$_SESSION['user_id'], $spotId, $score, $comment, $score, $comment]);
+
+            $this->recalculateRating($pdo, $spotId);
 
             $this->json([
+                'score'      => $score,
                 'comment'    => $comment,
                 'username'   => $_SESSION['username'],
                 'created_at' => date('Y-m-d H:i:s'),
@@ -239,6 +209,21 @@ class SpotController
         } catch (\Throwable $e) {
             $this->json(['error' => 'Erreur serveur : ' . $e->getMessage()], 500);
         }
+    }
+
+    // --------------------------------------------------------
+    // Recalcule la note moyenne d'un spot et la met en cache
+    // dans fishing_spots.rating (évite de recalculer à chaque affichage)
+    // --------------------------------------------------------
+    private function recalculateRating(PDO $pdo, int $spotId): float
+    {
+        $stmt = $pdo->prepare('SELECT ROUND(AVG(score), 1) AS avg_rating FROM spot_reviews WHERE spot_id = ?');
+        $stmt->execute([$spotId]);
+        $avg = (float) ($stmt->fetch(PDO::FETCH_ASSOC)['avg_rating'] ?? 0);
+
+        $pdo->prepare('UPDATE fishing_spots SET rating = ? WHERE id = ?')->execute([$avg, $spotId]);
+
+        return $avg;
     }
 
     // --------------------------------------------------------
