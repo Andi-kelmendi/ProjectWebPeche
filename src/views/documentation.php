@@ -65,16 +65,14 @@ $email    = htmlspecialchars($_SESSION['email'] ?? '');
     ══════════════════════════════════════ -->
     <div class="doc-wrapper">
 
-        <!-- Barre haute — flèche uniquement, pas de titre -->
-        <header class="doc-topbar">
-            <button class="btn-icon" id="btn-open" title="Ouvrir le menu">
-                <i class="fa-solid fa-arrow-right"></i>
-            </button>
-            <!-- Bouton sommaire visible uniquement sur mobile -->
-            <button class="toc-float-btn" id="toc-toggle" title="Sommaire">
-                <i class="fa-solid fa-list"></i> Sommaire
-            </button>
-        </header>
+        <!-- Bouton flottant ouvrir sidebar (visible quand sidebar fermée) -->
+        <button class="btn-icon btn-open-float" id="btn-open" title="Ouvrir le menu" style="display:none">
+            <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        <!-- Bouton sommaire mobile flottant -->
+        <button class="toc-float-btn" id="toc-toggle" title="Sommaire">
+            <i class="fa-solid fa-list"></i> Sommaire
+        </button>
 
         <div class="doc-layout">
 
