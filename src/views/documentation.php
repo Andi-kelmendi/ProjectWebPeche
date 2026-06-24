@@ -1,22 +1,15 @@
 <?php
-// ============================================================
-// src/views/documentation.php
-// Page documentation — Tuto pêche pour les débutants
-// ============================================================
-if (empty($_SESSION['user_id'])) {
-    header('Location: /login');
-    exit;
-}
+if (empty($_SESSION['user_id'])) { header('Location: /login'); exit; }
 $initiale = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
 $username = htmlspecialchars($_SESSION['username'] ?? 'Utilisateur');
-$email    = htmlspecialchars($_SESSION['email']    ?? '');
+$email    = htmlspecialchars($_SESSION['email'] ?? '');
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebPêche — La pêche pour les débutants</title>
+    <title>WebPêche — Documentation</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/accueil.css">
     <link rel="stylesheet" href="/assets/css/documentation.css">
@@ -25,7 +18,7 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
 <div class="app-container">
 
     <!-- ══════════════════════════════════════
-         SIDEBAR GAUCHE (identique à toutes les pages)
+         SIDEBAR GAUCHE
     ══════════════════════════════════════ -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -48,8 +41,8 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
             <a href="/profil" class="nav-link">
                 <i class="fa-regular fa-circle-user"></i><span>Profil</span>
             </a>
-            <a href="/parametres" class="nav-link">
-                <i class="fa-solid fa-gear"></i><span>Paramètres</span>
+            <a href="/parametre" class="nav-link">
+                <i class="fa-solid fa-gear"></i><span>Paramètre</span>
             </a>
             <a href="/documentation" class="nav-link active">
                 <i class="fa-solid fa-book"></i><span>Documentation</span>
@@ -72,46 +65,42 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
     ══════════════════════════════════════ -->
     <div class="doc-wrapper">
 
-        <!-- Barre haute avec bouton ouvrir sidebar + titre de page -->
+        <!-- Barre haute — flèche uniquement, pas de titre -->
         <header class="doc-topbar">
             <button class="btn-icon" id="btn-open" title="Ouvrir le menu">
-                <i class="fa-solid fa-bars"></i>
+                <i class="fa-solid fa-arrow-right"></i>
             </button>
-            <div class="doc-topbar-breadcrumb">
-                <span>Documentation</span>
-                <i class="fa-solid fa-chevron-right"></i>
-                <span class="breadcrumb-active">Pêche pour les débutants</span>
-            </div>
+            <!-- Bouton sommaire visible uniquement sur mobile -->
+            <button class="toc-float-btn" id="toc-toggle" title="Sommaire">
+                <i class="fa-solid fa-list"></i> Sommaire
+            </button>
         </header>
 
         <div class="doc-layout">
 
-            <!-- ── SOMMAIRE LATÉRAL (rubriques) ── -->
+            <!-- ── SOMMAIRE LATÉRAL ── -->
             <nav class="doc-toc" id="doc-toc">
                 <p class="toc-label">Sur cette page</p>
                 <ul>
-                    <li><a href="#intro"       class="toc-link active"><i class="fa-solid fa-fish"></i> Introduction</a></li>
-                    <li><a href="#materiel"     class="toc-link"><i class="fa-solid fa-toolbox"></i> Le matériel</a></li>
-                    <li><a href="#ou-aller"     class="toc-link"><i class="fa-solid fa-map-location-dot"></i> Où aller pêcher</a></li>
-                    <li><a href="#techniques"   class="toc-link"><i class="fa-solid fa-person-fishing"></i> Techniques de base</a></li>
-                    <li><a href="#reglementation" class="toc-link"><i class="fa-solid fa-scale-balanced"></i> Réglementation</a></li>
-                    <li><a href="#protegees"    class="toc-link"><i class="fa-solid fa-shield-halved"></i> Espèces protégées</a></li>
-                    <li><a href="#invasives"    class="toc-link"><i class="fa-solid fa-triangle-exclamation"></i> Espèces invasives</a></li>
-                    <li><a href="#videos"       class="toc-link"><i class="fa-brands fa-youtube"></i> Vidéos explicatives</a></li>
+                    <li><a href="#intro"          class="toc-link active"><i class="fa-solid fa-fish"></i> Introduction</a></li>
+                    <li><a href="#materiel"        class="toc-link"><i class="fa-solid fa-toolbox"></i> Le matériel</a></li>
+                    <li><a href="#ou-aller"        class="toc-link"><i class="fa-solid fa-map-location-dot"></i> Où aller pêcher</a></li>
+                    <li><a href="#techniques"      class="toc-link"><i class="fa-solid fa-hand-holding-water"></i> Techniques</a></li>
+                    <li><a href="#reglementation"  class="toc-link"><i class="fa-solid fa-scale-balanced"></i> Réglementation</a></li>
+                    <li><a href="#protegees"       class="toc-link"><i class="fa-solid fa-shield-halved"></i> Espèces protégées</a></li>
+                    <li><a href="#invasives"       class="toc-link"><i class="fa-solid fa-triangle-exclamation"></i> Espèces invasives</a></li>
+                    <li><a href="#videos"          class="toc-link"><i class="fa-brands fa-youtube"></i> Vidéos</a></li>
                 </ul>
-
                 <div class="toc-card-info">
                     <i class="fa-solid fa-circle-info"></i>
-                    <p>Cette page est mise à jour régulièrement. En cas de doute sur une réglementation, consultez toujours la <a href="https://www.federationpeche.fr" target="_blank" rel="noopener">Fédération Nationale</a>.</p>
+                    <p>En cas de doute sur une réglementation, consultez toujours la <a href="https://www.federationpeche.fr" target="_blank" rel="noopener">Fédération Nationale</a>.</p>
                 </div>
             </nav>
 
             <!-- ── CONTENU PRINCIPAL ── -->
             <main class="doc-content">
 
-                <!-- ─────────────────────────────────
-                     HERO — titre de la page
-                ───────────────────────────────── -->
+                <!-- HERO -->
                 <div class="doc-hero">
                     <div class="doc-hero-tag">Guide complet</div>
                     <h1 class="doc-hero-title">La pêche pour les débutants</h1>
@@ -122,15 +111,12 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                     </div>
                 </div>
 
-                <!-- ─────────────────────────────────
-                     SECTION 1 — Introduction
-                ───────────────────────────────── -->
+                <!-- 01 — Introduction -->
                 <section class="doc-section" id="intro">
                     <div class="section-label">01 — Introduction</div>
                     <h2>Pourquoi se mettre à la pêche ?</h2>
                     <p>La pêche est l'une des activités de plein air les plus pratiquées en France, avec plus de <strong>1,5 million de pêcheurs</strong> réguliers. C'est un loisir accessible à tous les âges, peu coûteux à démarrer, et qui permet de se reconnecter avec la nature tout en développant la patience et l'observation.</p>
                     <p>Contrairement à ce qu'on croit souvent, la pêche n'est pas réservée aux experts. Avec un équipement simple et quelques notions de base, vous pouvez attraper vos premiers poissons dès votre première sortie.</p>
-
                     <div class="doc-callout doc-callout--blue">
                         <i class="fa-solid fa-lightbulb"></i>
                         <div>
@@ -140,19 +126,15 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                     </div>
                 </section>
 
-                <!-- ─────────────────────────────────
-                     SECTION 2 — Le matériel
-                ───────────────────────────────── -->
+                <!-- 02 — Matériel -->
                 <section class="doc-section" id="materiel">
                     <div class="section-label">02 — Le matériel</div>
                     <h2>Le matériel nécessaire</h2>
                     <p>Inutile de dépenser des centaines d'euros pour débuter. Un kit de base bien choisi suffit amplement pour vos premières sorties.</p>
-
                     <h3>L'essentiel absolu</h3>
-
                     <div class="materiel-grid">
                         <div class="materiel-card">
-                            <div class="materiel-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+                            <div class="materiel-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
                             <div class="materiel-body">
                                 <h4>Canne à pêche</h4>
                                 <p>Pour débuter, une canne entre 3 et 4 m est idéale. Simple à utiliser, pas de moulinet à maîtriser.</p>
@@ -161,31 +143,28 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                                 </div>
                             </div>
                         </div>
-
                         <div class="materiel-card">
-                            <div class="materiel-icon"><i class="fa-solid fa-circle-notch"></i></div>
+                            <div class="materiel-icon"><i class="fa-solid fa-rotate"></i></div>
                             <div class="materiel-body">
                                 <h4>Fil de pêche</h4>
-                                <p>Un nylon de 0,18 à 0,22 mm de diamètre convient à la plupart des situations en eau douce pour débuter.</p>
+                                <p>Un nylon de 0,18 à 0,22 mm de diamètre convient à la plupart des situations en eau douce.</p>
                                 <div class="materiel-links">
                                     <a href="https://www.decathlon.fr/tous-les-sports/peche/fils-tresses-fluorocarbones-peche" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~5 €)</a>
                                 </div>
                             </div>
                         </div>
-
                         <div class="materiel-card">
-                            <div class="materiel-icon"><i class="fa-solid fa-circle"></i></div>
+                            <div class="materiel-icon"><i class="fa-regular fa-circle-dot"></i></div>
                             <div class="materiel-body">
-                                <h4>Flotteur</h4>
+                                <h4>Flotteur &amp; plombs</h4>
                                 <p>Le flotteur vous indique quand un poisson mord. Choisissez un kit flotteur + plombs adapté à votre canne.</p>
                                 <div class="materiel-links">
                                     <a href="https://www.decathlon.fr/tous-les-sports/peche/flotteurs-bouchons-de-peche" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~8 €)</a>
                                 </div>
                             </div>
                         </div>
-
                         <div class="materiel-card">
-                            <div class="materiel-icon"><i class="fa-solid fa-hook"></i></div>
+                            <div class="materiel-icon"><i class="fa-solid fa-location-pin"></i></div>
                             <div class="materiel-body">
                                 <h4>Hameçons</h4>
                                 <p>Pour débuter, des hameçons de taille 10 à 14 couvrent la plupart des espèces courantes. Achetez-en en sachet.</p>
@@ -194,38 +173,34 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                                 </div>
                             </div>
                         </div>
-
                         <div class="materiel-card">
-                            <div class="materiel-icon"><i class="fa-solid fa-wheat-awn"></i></div>
+                            <div class="materiel-icon"><i class="fa-solid fa-seedling"></i></div>
                             <div class="materiel-body">
                                 <h4>Appâts</h4>
-                                <p>Pour commencer : des vers de terre (les trouver dans votre jardin ou en acheter en animalerie) ou du pain de mie. Les vers fonctionnent avec quasiment toutes les espèces.</p>
+                                <p>Pour commencer : des vers de terre (jardin ou animalerie) ou du pain de mie. Les vers fonctionnent avec quasiment toutes les espèces.</p>
                                 <div class="materiel-links">
                                     <a href="https://www.decathlon.fr/tous-les-sports/peche/amorces-appats" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~4 €)</a>
                                 </div>
                             </div>
                         </div>
-
                         <div class="materiel-card">
-                            <div class="materiel-icon"><i class="fa-solid fa-scissors"></i></div>
+                            <div class="materiel-icon"><i class="fa-solid fa-box-open"></i></div>
                             <div class="materiel-body">
-                                <h4>Boîte de pêche</h4>
-                                <p>Une petite boîte pour ranger vos accessoires + une épuisette pour sortir les poissons de l'eau proprement sans les blesser.</p>
+                                <h4>Boîte de pêche &amp; épuisette</h4>
+                                <p>Une petite boîte pour ranger vos accessoires + une épuisette pour sortir les poissons proprement sans les blesser.</p>
                                 <div class="materiel-links">
                                     <a href="https://www.decathlon.fr/search?Ntt=boite+de+peche" target="_blank" rel="noopener" class="btn-link btn-link--decathlon"><i class="fa-solid fa-bag-shopping"></i> Decathlon (~12 €)</a>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                     <div class="doc-callout doc-callout--green">
                         <i class="fa-solid fa-wallet"></i>
                         <div>
                             <strong>Budget débutant complet</strong>
-                            <p>Comptez entre <strong>40 et 60 €</strong> pour un kit de départ complet chez Decathlon ou dans un magasin de pêche spécialisé. Évitez les équipements bas de gamme (moins de 15 €ht le kit complet) qui cassent rapidement.</p>
+                            <p>Comptez entre <strong>40 et 60 €</strong> pour un kit de départ complet chez Decathlon ou dans un magasin de pêche spécialisé. Évitez les équipements bas de gamme (moins de 15 € le kit complet) qui cassent rapidement.</p>
                         </div>
                     </div>
-
                     <h3>Le matériel optionnel (mais utile)</h3>
                     <ul class="doc-list">
                         <li><strong>Seau ou nasse de gardiennage</strong> — pour garder les poissons vivants avant de les relâcher</li>
@@ -235,16 +210,12 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                     </ul>
                 </section>
 
-                <!-- ─────────────────────────────────
-                     SECTION 3 — Où aller pêcher
-                ───────────────────────────────── -->
+                <!-- 03 — Où aller -->
                 <section class="doc-section" id="ou-aller">
                     <div class="section-label">03 — Où aller pêcher</div>
                     <h2>Où aller pêcher en France ?</h2>
                     <p>La France est un paradis pour la pêche en eau douce : rivières, lacs, étangs, canaux… Il existe des spots adaptés aux débutants partout sur le territoire.</p>
-
                     <h3>Les types d'eaux à connaître</h3>
-
                     <div class="type-eau-grid">
                         <div class="type-eau-card">
                             <div class="type-eau-header type-eau-header--1">
@@ -261,34 +232,28 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                             <p>Eaux plus lentes, plus chaudes. On y trouve <strong>carpes, brochets, perches, sandres</strong>. Pas de saison fermée sauf pour certaines espèces.</p>
                         </div>
                     </div>
-
                     <div class="doc-callout doc-callout--yellow">
                         <i class="fa-solid fa-map-location-dot"></i>
                         <div>
                             <strong>Utilisez notre carte WebPêche !</strong>
-                            <p>Les spots repérés sur notre carte par la communauté sont parfaits pour trouver un endroit près de chez vous. <a href="/accueil">Voir la carte →</a></p>
+                            <p>Les spots repérés par la communauté sont parfaits pour trouver un endroit près de chez vous. <a href="/accueil">Voir la carte →</a></p>
                         </div>
                     </div>
-
                     <h3>Comment trouver les plans d'eau autorisés ?</h3>
                     <ul class="doc-list">
-                        <li>Le site de votre <strong>AAPPMA locale</strong> (association de pêche de votre commune ou département) liste les parcours accessibles avec votre carte</li>
+                        <li>Le site de votre <strong>AAPPMA locale</strong> liste les parcours accessibles avec votre carte</li>
                         <li>Le site <a href="https://www.cartedepeche.fr" target="_blank" rel="noopener">cartedepeche.fr</a> — carte officielle de toutes les AAPPMA de France</li>
                         <li>Les <strong>étangs communaux</strong> souvent peu fréquentés et idéaux pour débuter</li>
                         <li>Les <strong>canaux navigables</strong> (Voies Navigables de France) — accessibles avec une carte nationale</li>
                     </ul>
                 </section>
 
-                <!-- ─────────────────────────────────
-                     SECTION 4 — Techniques de base
-                ───────────────────────────────── -->
+                <!-- 04 — Techniques -->
                 <section class="doc-section" id="techniques">
                     <div class="section-label">04 — Techniques</div>
                     <h2>Techniques de base</h2>
-
                     <h3>La pêche au coup (la plus simple)</h3>
                     <p>C'est la technique idéale pour débuter. On utilise un flotteur, et on laisse l'appât descendre à une profondeur définie. Quand le flotteur s'enfonce ou s'incline, c'est qu'un poisson mord !</p>
-
                     <div class="steps-list">
                         <div class="step">
                             <div class="step-num">1</div>
@@ -326,18 +291,14 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                             </div>
                         </div>
                     </div>
-
                     <h3>No-kill ou garder le poisson ?</h3>
-                    <p>La pratique du <strong>no-kill</strong> (relâcher le poisson après capture) est fortement recommandée pour les débutants et contribue à préserver les populations. Si vous souhaitez garder un poisson pour le consommer, assurez-vous d'abord qu'il n'est pas protégé et qu'il dépasse la taille minimale légale de capture.</p>
+                    <p>La pratique du <strong>no-kill</strong> (relâcher le poisson après capture) est fortement recommandée pour les débutants et contribue à préserver les populations. Si vous souhaitez garder un poisson pour le consommer, assurez-vous d'abord qu'il n'est pas protégé et qu'il dépasse la taille minimale légale.</p>
                 </section>
 
-                <!-- ─────────────────────────────────
-                     SECTION 5 — Réglementation
-                ───────────────────────────────── -->
+                <!-- 05 — Réglementation -->
                 <section class="doc-section" id="reglementation">
                     <div class="section-label">05 — Réglementation</div>
                     <h2>La réglementation en France</h2>
-
                     <div class="regle-grid">
                         <div class="regle-card">
                             <div class="regle-icon"><i class="fa-solid fa-id-card"></i></div>
@@ -348,39 +309,34 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                         <div class="regle-card">
                             <div class="regle-icon"><i class="fa-solid fa-calendar-days"></i></div>
                             <h4>Saisons de pêche</h4>
-                            <p>En 1ère catégorie, la truite se pêche uniquement du 2e samedi de mars au 3e dimanche de septembre. En 2e catégorie, la plupart des espèces sont pêchables toute l'année.</p>
+                            <p>En 1ère catégorie, la truite se pêche du 2e samedi de mars au 3e dimanche de septembre. En 2e catégorie, la plupart des espèces sont pêchables toute l'année.</p>
                         </div>
                         <div class="regle-card">
-                            <div class="regle-icon"><i class="fa-solid fa-ruler"></i></div>
+                            <div class="regle-icon"><i class="fa-solid fa-ruler-horizontal"></i></div>
                             <h4>Tailles minimales</h4>
-                            <p>Chaque espèce a une taille légale minimale de capture. Ex : truite fario → 23 cm, brochet → 60 cm, sandre → 40 cm. En dessous, relâchez obligatoirement.</p>
+                            <p>Chaque espèce a une taille légale minimale. Ex : truite fario → 23 cm, brochet → 60 cm, sandre → 40 cm. En dessous, relâchez obligatoirement.</p>
                         </div>
                         <div class="regle-card">
-                            <div class="regle-icon"><i class="fa-solid fa-hashtag"></i></div>
+                            <div class="regle-icon"><i class="fa-solid fa-list-ol"></i></div>
                             <h4>Nombre de lignes</h4>
-                            <p>Avec une carte de pêche standard, vous pouvez utiliser jusqu'à 4 lignes simultanément en 2e catégorie, 2 lignes en 1ère catégorie.</p>
+                            <p>Avec une carte standard, vous pouvez utiliser jusqu'à 4 lignes simultanément en 2e catégorie, 2 lignes en 1ère catégorie.</p>
                         </div>
                     </div>
-
                     <div class="doc-callout doc-callout--red">
                         <i class="fa-solid fa-triangle-exclamation"></i>
                         <div>
                             <strong>Infractions les plus courantes</strong>
-                            <p>Pêcher sans carte, pêcher hors saison, conserver un poisson en dessous de la taille légale ou prélever une espèce protégée sont des infractions passibles de plusieurs centaines d'euros d'amende et de confiscation du matériel.</p>
+                            <p>Pêcher sans carte, hors saison, conserver un poisson en dessous de la taille légale ou prélever une espèce protégée sont des infractions passibles de plusieurs centaines d'euros d'amende et de confiscation du matériel.</p>
                         </div>
                     </div>
                 </section>
 
-                <!-- ─────────────────────────────────
-                     SECTION 6 — Espèces protégées
-                ───────────────────────────────── -->
+                <!-- 06 — Espèces protégées -->
                 <section class="doc-section" id="protegees">
                     <div class="section-label">06 — Espèces protégées</div>
                     <h2>Comment savoir si une espèce est protégée ?</h2>
                     <p>Certaines espèces de poissons sont totalement protégées en France : leur capture, même accidentelle, doit être immédiatement suivie d'un relâcher sans manipulation inutile.</p>
-
                     <h3>Les espèces les plus connues totalement protégées</h3>
-
                     <div class="espece-list">
                         <div class="espece-row espece-row--protected">
                             <div class="espece-badge espece-badge--protected"><i class="fa-solid fa-shield-halved"></i> Protégée</div>
@@ -411,22 +367,18 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                             </div>
                         </div>
                     </div>
-
                     <h3>Comment vérifier ?</h3>
                     <ul class="doc-list">
-                        <li>Consultez l'<a href="https://inpn.mnhn.fr/accueil/index" target="_blank" rel="noopener">Inventaire National du Patrimoine Naturel (INPN)</a> — base officielle des espèces protégées en France</li>
-                      ca marche âs cpomme inpn qui c fait hack retire ca zbi
+                        <li>Contactez votre <strong>fédération de pêche locale</strong> — la liste officielle est disponible sur <a href="https://www.federationpeche.fr" target="_blank" rel="noopener">federationpeche.fr</a></li>
+                        <li>En cas de doute sur le terrain : <strong>relâchez toujours immédiatement</strong></li>
                     </ul>
                 </section>
 
-                <!-- ─────────────────────────────────
-                     SECTION 7 — Espèces invasives
-                ───────────────────────────────── -->
+                <!-- 07 — Espèces invasives -->
                 <section class="doc-section" id="invasives">
                     <div class="section-label">07 — Espèces invasives</div>
                     <h2>Les espèces invasives : que faire ?</h2>
                     <p>À l'opposé des espèces protégées, certaines espèces invasives représentent une menace pour les écosystèmes aquatiques français. Leur relâcher dans un milieu naturel est <strong>interdit par la loi</strong>.</p>
-
                     <div class="doc-callout doc-callout--red">
                         <i class="fa-solid fa-ban"></i>
                         <div>
@@ -434,7 +386,6 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                             <p>Il est interdit de relâcher une espèce invasive dans un milieu naturel. En cas de capture, euthanasier le poisson ou le remettre aux autorités compétentes (fédération de pêche locale).</p>
                         </div>
                     </div>
-
                     <div class="espece-list">
                         <div class="espece-row espece-row--invasive">
                             <div class="espece-badge espece-badge--invasive"><i class="fa-solid fa-triangle-exclamation"></i> Invasive</div>
@@ -453,58 +404,51 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                         <div class="espece-row espece-row--invasive">
                             <div class="espece-badge espece-badge--invasive"><i class="fa-solid fa-triangle-exclamation"></i> Invasive</div>
                             <div class="espece-info">
-                                <strong>Écrevisses américaines & signal</strong>
+                                <strong>Écrevisses américaines &amp; signal</strong>
                                 <p>Porteuses de la "peste des écrevisses", elles déciment les populations indigènes. Si vous en capturez, ne les relâchez pas.</p>
                             </div>
                         </div>
                         <div class="espece-row espece-row--invasive">
                             <div class="espece-badge espece-badge--invasive"><i class="fa-solid fa-triangle-exclamation"></i> Invasive</div>
                             <div class="espece-info">
-                                <strong>Poisson rouge & carpe koï sauvages</strong>
+                                <strong>Poisson rouge &amp; carpe koï sauvages</strong>
                                 <p>Des poissons d'aquarium relâchés dans la nature perturbent l'écosystème. C'est interdit — ne jamais relâcher vos animaux de compagnie aquatiques.</p>
                             </div>
                         </div>
                     </div>
-
-                    <p>Pour signaler une espèce invasive, contactez votre <a href="https://www.cartepeche.fr" target="_blank" rel="noopener">fédération de pêche locale</a> ou utilisez l'application <a href="https://www.inpn.mnhn.fr/actualites/lire/10684" target="_blank" rel="noopener">Suricate de l'INPN</a>.</p>
+                    <p>Pour signaler une espèce invasive, contactez votre <a href="https://www.cartedepeche.fr" target="_blank" rel="noopener">fédération de pêche locale</a>.</p>
                 </section>
 
-                <!-- ─────────────────────────────────
-                     SECTION 8 — Vidéos
-                ───────────────────────────────── -->
+                <!-- 08 — Vidéos -->
                 <section class="doc-section" id="videos">
                     <div class="section-label">08 — Vidéos</div>
                     <h2>Vidéos explicatives en français</h2>
                     <p>Ces vidéos sélectionnées vous aideront à visualiser les techniques et à mieux comprendre la pêche en pratique.</p>
-
                     <div class="videos-grid">
                         <div class="video-card">
                             <div class="video-embed">
                                 <iframe
-                                    src="https://www.youtube.com/watch?v=rvJ1kf_Xkhk0"
-                                    title="Apprendre à pêcher pour les débutants"
+                                    src="https://www.youtube.com/embed/rvJ1kf_Xkhk0"
+                                    title="Débuter la pêche au coup"
                                     frameborder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen
-                                    loading="lazy">
+                                    allowfullscreen loading="lazy">
                                 </iframe>
                             </div>
                             <div class="video-info">
                                 <h4>Débuter la pêche au coup</h4>
                                 <p>Montage de la ligne, amorçage, technique de lancer — les bases expliquées clairement.</p>
-                                <span class="video-tag"><i class="fa-solid fa-person-fishing"></i> Technique</span>
+                                <span class="video-tag"><i class="fa-solid fa-hand-holding-water"></i> Technique</span>
                             </div>
                         </div>
-
                         <div class="video-card">
                             <div class="video-embed">
                                 <iframe
-                                    src="https://www.youtube.com/watch?v=dT-vTiWicoc"
-                                    title="Matériel de pêche débutant"
+                                    src="https://www.youtube.com/embed/dT-vTiWicoc"
+                                    title="Quel matériel choisir"
                                     frameborder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen
-                                    loading="lazy">
+                                    allowfullscreen loading="lazy">
                                 </iframe>
                             </div>
                             <div class="video-info">
@@ -513,16 +457,14 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                                 <span class="video-tag"><i class="fa-solid fa-toolbox"></i> Matériel</span>
                             </div>
                         </div>
-
                         <div class="video-card">
                             <div class="video-embed">
                                 <iframe
-                                    src="https://www.youtube.com/watch?v=Fr7r6WpRyXI"
-                                    title="Réglementation pêche France"
+                                    src="https://www.youtube.com/embed/Fr7r6WpRyXI"
+                                    title="La réglementation expliquée"
                                     frameborder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen
-                                    loading="lazy">
+                                    allowfullscreen loading="lazy">
                                 </iframe>
                             </div>
                             <div class="video-info">
@@ -532,38 +474,34 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                             </div>
                         </div>
                     </div>
-
                     <div class="doc-callout doc-callout--blue">
                         <i class="fa-brands fa-youtube"></i>
                         <div>
-                            <strong>playliste YouTube recommandées</strong>
+                            <strong>Playlists YouTube recommandées</strong>
                             <p>Pour aller plus loin : <a href="https://youtube.com/playlist?list=PLxfzG8LoCw720ACkarY_WWMR0tnAMxwSN&si=dI3coNUT_jAfDT5C" target="_blank" rel="noopener">Fishing Chaos</a>, <a href="https://www.youtube.com/@carpcontact" target="_blank" rel="noopener">Carp Contact</a>, et les vidéos officielles de la <a href="https://www.youtube.com/@FedNatPeche" target="_blank" rel="noopener">Fédération Nationale de Pêche</a>.</p>
                         </div>
                     </div>
                 </section>
 
-                <!-- Pied de page de la doc -->
                 <footer class="doc-footer">
-                    <p>Contenu rédigé par l'équipe WebPêche. Pour toute question ou correction, contactez-nous.</p>
+                    <p>Contenu rédigé par l'équipe WebPêche.</p>
                     <a href="/accueil" class="btn-link btn-link--blue"><i class="fa-solid fa-map"></i> Retour à la carte</a>
                 </footer>
 
-            </main><!-- /doc-content -->
-        </div><!-- /doc-layout -->
-    </div><!-- /doc-wrapper -->
-
-</div><!-- /app-container -->
+            </main>
+        </div>
+    </div>
+</div>
 
 <script>
 (function () {
-    // ── Thème clair / sombre ──────────────────────────────────
-    const app    = document.getElementById('app');
-    const btnL   = document.getElementById('btn-light');
-    const btnD   = document.getElementById('btn-dark');
-    const saved  = localStorage.getItem('webpeche_theme') || 'light';
+    const app   = document.getElementById('app');
+    const btnL  = document.getElementById('btn-light');
+    const btnD  = document.getElementById('btn-dark');
+    const saved = localStorage.getItem('webpeche_theme') || 'light';
 
     function applyTheme(t) {
-        app.classList.toggle('theme-dark', t === 'dark');
+        app.classList.toggle('theme-dark',  t === 'dark');
         app.classList.toggle('theme-light', t !== 'dark');
         btnL.classList.toggle('active', t !== 'dark');
         btnD.classList.toggle('active', t === 'dark');
@@ -573,38 +511,61 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
     btnL.addEventListener('click', () => applyTheme('light'));
     btnD.addEventListener('click', () => applyTheme('dark'));
 
-    // ── Sidebar ouvrir / fermer ───────────────────────────────
-    const sidebar = document.getElementById('sidebar');
-    const btnOpen = document.getElementById('btn-open');
+    const sidebar  = document.getElementById('sidebar');
+    const btnOpen  = document.getElementById('btn-open');
     const btnClose = document.getElementById('btn-close');
+    btnOpen.style.display = 'none';
 
-    btnOpen.addEventListener('click', () => { sidebar.classList.remove('collapsed'); btnOpen.style.display = 'none'; });
-    btnClose.addEventListener('click', () => { sidebar.classList.add('collapsed'); btnOpen.style.display = 'flex'; });
+    btnClose.addEventListener('click', () => {
+        sidebar.classList.add('collapsed');
+        btnOpen.style.display = 'flex';
+        btnClose.style.display = 'none';
+    });
+    btnOpen.addEventListener('click', () => {
+        sidebar.classList.remove('collapsed');
+        btnOpen.style.display = 'none';
+        btnClose.style.display = 'flex';
+    });
 
-    // ── Surlignage actif dans le sommaire au scroll ───────────
+    // Surlignage sommaire au scroll
     const sections = document.querySelectorAll('.doc-section[id]');
     const tocLinks = document.querySelectorAll('.toc-link');
-
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 tocLinks.forEach(l => l.classList.remove('active'));
-                const active = document.querySelector(`.toc-link[href="#${entry.target.id}"]`);
-                if (active) active.classList.add('active');
+                const a = document.querySelector(`.toc-link[href="#${entry.target.id}"]`);
+                if (a) a.classList.add('active');
             }
         });
     }, { rootMargin: '-20% 0px -70% 0px' });
-
     sections.forEach(s => observer.observe(s));
 
-    // ── Scroll doux pour les ancres du sommaire ───────────────
+    // Scroll doux
     tocLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            const target = document.querySelector(link.getAttribute('href'));
-            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const t = document.querySelector(link.getAttribute('href'));
+            if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
     });
+
+    // ── Mobile : bouton flottant pour ouvrir le sommaire ──
+    const tocToggle = document.getElementById('toc-toggle');
+    const docToc    = document.getElementById('doc-toc');
+    if (tocToggle && docToc) {
+        tocToggle.addEventListener('click', () => {
+            docToc.classList.toggle('toc-open');
+            tocToggle.querySelector('i').className =
+                docToc.classList.contains('toc-open')
+                    ? 'fa-solid fa-xmark'
+                    : 'fa-solid fa-list';
+        });
+        // Ferme le sommaire quand on clique un lien (mobile)
+        tocLinks.forEach(link => {
+            link.addEventListener('click', () => docToc.classList.remove('toc-open'));
+        });
+    }
 })();
 </script>
 </body>
