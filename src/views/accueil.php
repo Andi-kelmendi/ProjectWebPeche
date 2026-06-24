@@ -493,27 +493,53 @@ async function loadSpots() {
     }
 }
 
+// Raccourcit une adresse complète aux 2 premiers éléments, pour la popup compacte
+// (l'adresse complète reste visible dans le panneau "Voir plus")
+function shortAddress(address, parts = 2) {
+    if (!address) return '';
+    return address.split(',').slice(0, parts).map(s => s.trim()).join(', ');
+}
+
+// Badge "Utilisateur" / "Admin" — affiché en haut de chaque popup et du panneau
+function authorBadgeHtml(isAdmin) {
+    return isAdmin
+        ? `<div class="popup-author is-admin"><i class="fa-solid fa-shield-halved"></i><span>Admin</span></div>`
+        : `<div class="popup-author"><i class="fa-solid fa-circle-user"></i><span>Utilisateur</span></div>`;
+}
+
 function popupHtml(spot) {
-    const region   = spot.region ? ` — ${escapeHtml(spot.region)}` : '';
-    const species  = spot.species
+    const region    = spot.region ? shortAddress(spot.region) : '';
+    const species   = spot.species
         ? `🐟 ${escapeHtml(spot.species)}`
         : `🐟 Espèces non renseignées`;
-    const myScore  = spot.my_score || 0;
+    const myScore   = spot.my_score || 0;
+    const canDelete = !!spot.can_delete;
 
     return `
         <div class="spot-popup" data-spot-id="${spot.id}">
-            <strong>${escapeHtml(spot.name)}</strong><br>
-            <small>${ratingBadgeHtml(spot.rating)}${region}</small><br>
-            <small>${species}</small>
+            ${authorBadgeHtml(spot.creator_is_admin)}
 
-            <div class="popup-stars" data-selected="${myScore}">
-                ${buildStarsHtml(spot.id, myScore)}
+            <strong class="popup-title">${escapeHtml(spot.name)}</strong>
+
+            <div class="popup-rating-row">
+                ${ratingBadgeHtml(spot.rating)}
+                <div class="popup-stars" data-selected="${myScore}">
+                    ${buildStarsHtml(spot.id, myScore)}
+                </div>
             </div>
+
+            ${region ? `<p class="popup-meta"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(region)}</p>` : ''}
+            <p class="popup-meta">${species}</p>
 
             <div class="popup-actions">
                 <button class="popup-btn more" onclick="openSpotPanel(${spot.id})">
                     Voir plus
                 </button>
+                ${canDelete ? `
+                    <button class="popup-btn delete" onclick="deleteSpot(${spot.id})" title="Supprimer ce spot">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                ` : ''}
             </div>
         </div>
     `;
@@ -525,8 +551,45 @@ function addSpotMarker(spot) {
     // IMPORTANT : on lie une FONCTION (pas une chaîne figée) pour que la popup
     // se régénère avec les données à jour (note, étoiles) à chaque ouverture,
     // au lieu de réafficher l'ancien contenu du moment du chargement de la page
-    marker.bindPopup(() => popupHtml(spot), { minWidth: 220 });
+    marker.bindPopup(() => popupHtml(spot), { minWidth: 230 });
     markersById[spot.id] = marker;
+}
+
+// Retire un spot de la carte et de la mémoire locale (après suppression)
+function removeSpotFromMap(id) {
+    const marker = markersById[id];
+    if (marker) {
+        spotsLayer.removeLayer(marker);
+        delete markersById[id];
+    }
+    allSpots = allSpots.filter(s => s.id !== id);
+}
+
+// Supprime un spot (popup ou panneau) après confirmation
+async function deleteSpot(id) {
+    if (!confirm('Voulez-vous vraiment supprimer ce spot ? Cette action est irréversible.')) {
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/spot/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `spot_id=${id}`
+        });
+        const data = await res.json();
+
+        if (data.error) { alert(data.error); return; }
+
+        removeSpotFromMap(id);
+
+        if (spotPanel.dataset.currentSpot === String(id)) {
+            closeSpotPanel();
+        }
+    } catch (err) {
+        console.error('Erreur lors de la suppression :', err);
+        alert('Une erreur est survenue lors de la suppression.');
+    }
 }
 
 // Premier chargement des spots existants (depuis la base de données)
@@ -946,7 +1009,17 @@ function renderSpotPanel(spot) {
     currentSpotComments = spot.comments;
 
     spotPanelBody.innerHTML = `
-        <h2>${escapeHtml(spot.name)}</h2>
+        ${authorBadgeHtml(spot.creator_is_admin)}
+
+        <div class="panel-title-row">
+            <h2>${escapeHtml(spot.name)}</h2>
+            ${spot.can_delete ? `
+                <button type="button" class="panel-delete-btn" onclick="deleteSpot(${spot.id})" title="Supprimer ce spot">
+                    <i class="fa-solid fa-trash"></i> Supprimer
+                </button>
+            ` : ''}
+        </div>
+
         <div class="panel-meta">
             ${ratingBadgeHtml(spot.rating)}
             <span>📍 ${escapeHtml(region)}</span>

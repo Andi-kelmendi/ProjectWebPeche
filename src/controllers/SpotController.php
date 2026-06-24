@@ -21,9 +21,11 @@ class SpotController
         try {
             $pdo  = Database::connect();
             $stmt = $pdo->query(
-                'SELECT id, name, description, latitude, longitude, region, species, rating
-                 FROM fishing_spots
-                 ORDER BY created_at DESC'
+                'SELECT s.id, s.name, s.description, s.latitude, s.longitude, s.region, s.species,
+                        s.rating, s.user_id, u.is_admin AS creator_is_admin
+                 FROM fishing_spots s
+                 JOIN users u ON u.id = s.user_id
+                 ORDER BY s.created_at DESC'
             );
             $spots = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -38,7 +40,9 @@ class SpotController
             }
 
             foreach ($spots as &$spot) {
-                $spot['my_score'] = $myScores[$spot['id']] ?? 0;
+                $spot['my_score']         = $myScores[$spot['id']] ?? 0;
+                $spot['creator_is_admin'] = (bool) $spot['creator_is_admin'];
+                $spot['can_delete']       = $this->canDelete($spot);
             }
 
             $this->json($spots);
@@ -62,7 +66,12 @@ class SpotController
         try {
             $pdo = Database::connect();
 
-            $stmt = $pdo->prepare('SELECT * FROM fishing_spots WHERE id = ?');
+            $stmt = $pdo->prepare(
+                'SELECT s.*, u.is_admin AS creator_is_admin
+                 FROM fishing_spots s
+                 JOIN users u ON u.id = s.user_id
+                 WHERE s.id = ?'
+            );
             $stmt->execute([$id]);
             $spot = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -70,6 +79,9 @@ class SpotController
                 $this->json(['error' => 'Spot introuvable.'], 404);
                 return;
             }
+
+            $spot['creator_is_admin'] = (bool) $spot['creator_is_admin'];
+            $spot['can_delete']       = $this->canDelete($spot);
 
             // Avis écrits uniquement (ceux qui ont un commentaire texte),
             // chacun avec sa note en étoiles pour permettre le filtrage côté client
@@ -142,6 +154,12 @@ class SpotController
             $stmt = $pdo->prepare('SELECT * FROM fishing_spots WHERE id = ?');
             $stmt->execute([$newId]);
             $spot = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Champs additionnels attendus par le front (le créateur peut forcément
+            // supprimer son propre spot qu'il vient de créer)
+            $spot['creator_is_admin'] = !empty($_SESSION['is_admin']);
+            $spot['can_delete']       = true;
+            $spot['my_score']         = 0;
 
             $this->json($spot, 201);
         } catch (\Throwable $e) {
@@ -232,6 +250,65 @@ class SpotController
         } catch (\Throwable $e) {
             $this->json(['error' => 'Erreur serveur : ' . $e->getMessage()], 500);
         }
+    }
+
+    // --------------------------------------------------------
+    // POST /api/spot/delete → supprime un spot
+    // Autorisé uniquement pour : le créateur du spot, OU un compte admin
+    // --------------------------------------------------------
+    public function destroy(): void
+    {
+        if (empty($_SESSION['user_id'])) {
+            $this->json(['error' => 'Vous devez être connecté.'], 401);
+            return;
+        }
+
+        $spotId = (int) ($_POST['spot_id'] ?? 0);
+        if (!$spotId) {
+            $this->json(['error' => 'ID manquant.'], 400);
+            return;
+        }
+
+        try {
+            $pdo  = Database::connect();
+            $stmt = $pdo->prepare('SELECT user_id FROM fishing_spots WHERE id = ?');
+            $stmt->execute([$spotId]);
+            $spot = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$spot) {
+                $this->json(['error' => 'Spot introuvable.'], 404);
+                return;
+            }
+
+            if (!$this->canDelete($spot)) {
+                $this->json(['error' => "Vous n'avez pas le droit de supprimer ce spot."], 403);
+                return;
+            }
+
+            // Les avis (spot_reviews) liés sont supprimés automatiquement
+            // grâce à la contrainte ON DELETE CASCADE en base
+            $pdo->prepare('DELETE FROM fishing_spots WHERE id = ?')->execute([$spotId]);
+
+            $this->json(['success' => true]);
+        } catch (\Throwable $e) {
+            $this->json(['error' => 'Erreur serveur : ' . $e->getMessage()], 500);
+        }
+    }
+
+    // --------------------------------------------------------
+    // Un spot peut être supprimé par son créateur, ou par un admin
+    // --------------------------------------------------------
+    private function canDelete(array $spot): bool
+    {
+        if (empty($_SESSION['user_id'])) {
+            return false;
+        }
+
+        if (!empty($_SESSION['is_admin'])) {
+            return true;
+        }
+
+        return (int) $spot['user_id'] === (int) $_SESSION['user_id'];
     }
 
     // --------------------------------------------------------
