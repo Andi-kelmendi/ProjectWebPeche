@@ -494,10 +494,11 @@ async function loadSpots() {
 }
 
 function popupHtml(spot) {
-    const region  = spot.region ? ` — ${escapeHtml(spot.region)}` : '';
-    const species = spot.species
+    const region   = spot.region ? ` — ${escapeHtml(spot.region)}` : '';
+    const species  = spot.species
         ? `🐟 ${escapeHtml(spot.species)}`
         : `🐟 Espèces non renseignées`;
+    const myScore  = spot.my_score || 0;
 
     return `
         <div class="spot-popup" data-spot-id="${spot.id}">
@@ -505,8 +506,8 @@ function popupHtml(spot) {
             <small>${ratingBadgeHtml(spot.rating)}${region}</small><br>
             <small>${species}</small>
 
-            <div class="popup-stars" data-selected="0">
-                ${buildStarsHtml(spot.id)}
+            <div class="popup-stars" data-selected="${myScore}">
+                ${buildStarsHtml(spot.id, myScore)}
             </div>
 
             <div class="popup-actions">
@@ -520,7 +521,11 @@ function popupHtml(spot) {
 
 function addSpotMarker(spot) {
     const marker = L.marker([spot.latitude, spot.longitude]).addTo(spotsLayer);
-    marker.bindPopup(popupHtml(spot), { minWidth: 220 });
+
+    // IMPORTANT : on lie une FONCTION (pas une chaîne figée) pour que la popup
+    // se régénère avec les données à jour (note, étoiles) à chaque ouverture,
+    // au lieu de réafficher l'ancien contenu du moment du chargement de la page
+    marker.bindPopup(() => popupHtml(spot), { minWidth: 220 });
     markersById[spot.id] = marker;
 }
 
@@ -709,9 +714,10 @@ document.addEventListener('click', (e) => {
    ================================================================ */
 
 // Construit le HTML des 5 étoiles cliquables pour un spot donné
-function buildStarsHtml(spotId) {
+// "selected" pré-remplit les étoiles avec la note déjà donnée par l'utilisateur (s'il y en a une)
+function buildStarsHtml(spotId, selected = 0) {
     return [1, 2, 3, 4, 5].map(n => `
-        <i class="fa-solid fa-star star-icon"
+        <i class="fa-solid fa-star star-icon ${n <= selected ? 'filled' : ''}"
            data-value="${n}"
            onmouseenter="previewStars(this, ${n})"
            onmouseleave="resetStarsPreview(this)"
@@ -757,6 +763,14 @@ async function rateSpotStars(id, score, starEl) {
         const data = await res.json();
 
         if (data.error) { alert(data.error); return; }
+
+        // Met à jour la donnée en mémoire : essentiel pour que la popup reste
+        // juste si on la ferme puis la rouvre, sans recharger toute la page
+        const spotData = allSpots.find(s => s.id === id);
+        if (spotData) {
+            spotData.rating   = data.rating;
+            spotData.my_score = score;
+        }
 
         // Met à jour le badge de pourcentage dans la popup, si elle est ouverte
         const popupBadge = document.querySelector(`.spot-popup[data-spot-id="${id}"] .spot-rating-value`);
@@ -942,7 +956,7 @@ function renderSpotPanel(spot) {
 
         <div class="panel-rate-block">
             <span class="panel-vote-label">Votre note :</span>
-            <div class="panel-stars" data-selected="0">${buildStarsHtml(spot.id)}</div>
+            <div class="panel-stars" data-selected="${spot.my_score || 0}">${buildStarsHtml(spot.id, spot.my_score || 0)}</div>
         </div>
 
         <hr>

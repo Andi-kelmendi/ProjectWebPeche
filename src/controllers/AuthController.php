@@ -14,6 +14,11 @@ class AuthController
     // --------------------------------------------------------
     public function login(): void
     {
+        if (!empty($_SESSION['user_id'])) {
+            header('Location: /accueil');
+            exit;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->handleLogin();
         } else {
@@ -27,6 +32,11 @@ class AuthController
     // --------------------------------------------------------
     public function register(): void
     {
+        if (!empty($_SESSION['user_id'])) {
+            header('Location: /accueil');
+            exit;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->handleRegister();
         } else {
@@ -66,9 +76,9 @@ class AuthController
         $_SESSION['username'] = $user['username'];
         $_SESSION['email']    = $user['email'];
 
-        // Cookie "Se souvenir de moi" (30 jours)
+        // "Se souvenir de moi" : crée un jeton qui survit à la fermeture du navigateur
         if (!empty($_POST['remember'])) {
-            setcookie('remember_me', session_id(), time() + 60 * 60 * 24 * 30, '/');
+            $this->rememberUser($pdo, (int) $user['id']);
         }
 
         // Redirection vers la page d'accueil (carte)

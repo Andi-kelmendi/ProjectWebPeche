@@ -27,6 +27,20 @@ class SpotController
             );
             $spots = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+            // Récupère les notes personnelles de l'utilisateur connecté (1 seule requête)
+            $myScores = [];
+            if (!empty($_SESSION['user_id'])) {
+                $stmt = $pdo->prepare('SELECT spot_id, score FROM spot_reviews WHERE user_id = ?');
+                $stmt->execute([$_SESSION['user_id']]);
+                foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                    $myScores[$row['spot_id']] = (int) $row['score'];
+                }
+            }
+
+            foreach ($spots as &$spot) {
+                $spot['my_score'] = $myScores[$spot['id']] ?? 0;
+            }
+
             $this->json($spots);
         } catch (\Throwable $e) {
             $this->json(['error' => 'Erreur serveur : ' . $e->getMessage()], 500);
@@ -68,6 +82,15 @@ class SpotController
             );
             $stmt->execute([$id]);
             $spot['comments'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Note personnelle de l'utilisateur connecté pour ce spot (pré-remplit les étoiles)
+            $spot['my_score'] = 0;
+            if (!empty($_SESSION['user_id'])) {
+                $stmt = $pdo->prepare('SELECT score FROM spot_reviews WHERE user_id = ? AND spot_id = ?');
+                $stmt->execute([$_SESSION['user_id'], $id]);
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                $spot['my_score'] = $row ? (int) $row['score'] : 0;
+            }
 
             $this->json($spot);
         } catch (\Throwable $e) {
