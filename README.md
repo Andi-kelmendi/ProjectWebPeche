@@ -54,7 +54,7 @@ Le projet propose une interface agréable avec thème clair/sombre et une expér
 ## 🛠️ Technologies utilisées
 
 - **Backend** : PHP 8 + PDO
-- **Base de données** : MySQL / MariaDB
+- **Base de données** : MySQL
 - **Frontend** : HTML5, CSS3 (variables CSS), JavaScript vanilla
 - **Cartographie** : Leaflet.js + OpenStreetMap
 - **Autoloading** : Composer (PSR-4)
