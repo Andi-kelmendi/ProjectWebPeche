@@ -1,23 +1,13 @@
 <?php
-// ============================================================
-// src/views/parametre.php
-// Page de configuration des paramètres utilisateur
-// ============================================================
-
-// Sécurité : si pas connecté → retour au login
-if (empty($_SESSION['user_id'])) {
-    header('Location: /login');
-    exit;
-}
-
-// Initiales et données utilisateur (simulées ou issues de la session)
-$initiale = strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1));
-$username = htmlspecialchars($_SESSION['username'] ?? 'Utilisateur');
-$email    = htmlspecialchars($_SESSION['email']    ?? '');
-
-// Données additionnelles de pêche (à l'avenir, viendront de ta BDD via le Model)
-$fishing_type = htmlspecialchars($_SESSION['fishing_type'] ?? 'carnassier');
-$license_num  = htmlspecialchars($_SESSION['license_num']  ?? '');
+// Vue chargée par ParametresController::show()
+// $user est injecté par le contrôleur
+$initiale  = strtoupper(substr($user['username'] ?? 'U', 0, 1));
+$avatarSrc = !empty($user['avatar'])
+    ? htmlspecialchars($user['avatar']) . '?t=' . time()
+    : null;
+$memberSince = $user['created_at']
+    ? date('F Y', strtotime($user['created_at']))
+    : '';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -25,145 +15,374 @@ $license_num  = htmlspecialchars($_SESSION['license_num']  ?? '');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebPêche — Paramètres</title>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/accueil.css">
-    <link rel="stylesheet" href="/assets/css/parametre.css">
+    <link rel="stylesheet" href="/assets/css/parametres.css">
 </head>
 <body class="theme-light" id="app">
-
 <div class="app-container">
 
+    <!-- ══ SIDEBAR ══ -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="user-card">
-                <div class="user-avatar"><?= $initiale ?></div>
+                <div class="user-avatar" id="sb-avatar">
+                    <?php if ($avatarSrc): ?>
+                        <img src="<?= $avatarSrc ?>" alt="avatar">
+                    <?php else: ?>
+                        <?= $initiale ?>
+                    <?php endif; ?>
+                </div>
                 <div class="user-info">
                     <span class="app-brand">WebPêche</span>
-                    <span class="user-email"><?= $email ?: $username ?></span>
+                    <span class="user-email"><?= htmlspecialchars($user['email']) ?></span>
                 </div>
             </div>
-            <button class="btn-icon" id="btn-close" title="Fermer le menu">
-                <i class="fa-solid fa-arrow-left"></i>
-            </button>
+            <button class="btn-icon" id="btn-close"><i class="fa-solid fa-arrow-left"></i></button>
         </div>
-
         <nav class="sidebar-nav">
-            <p class="nav-label">ACCUEIL</p>
-            <a href="/accueil" class="nav-link">
-                <i class="fa-solid fa-house"></i>
-                <span>Home Map</span>
-            </a>
-            <a href="/profil" class="nav-link">
-                <i class="fa-regular fa-circle-user"></i>
-                <span>Profil</span>
-            </a>
-            <a href="/parametre" class="nav-link active">
-                <i class="fa-solid fa-gear"></i>
-                <span>Paramètre</span>
-            </a>
-            <a href="/documentation" class="nav-link">
-                <i class="fa-solid fa-book"></i>
-                <span>Documentation</span>
-            </a>
+            <p class="nav-label">NAVIGATION</p>
+            <a href="/accueil"       class="nav-link"><i class="fa-solid fa-house"></i><span>Home Map</span></a>
+            <a href="/profil"        class="nav-link"><i class="fa-regular fa-circle-user"></i><span>Profil</span></a>
+            <a href="/parametre"     class="nav-link active"><i class="fa-solid fa-gear"></i><span>Paramètre</span></a>
+            <a href="/documentation" class="nav-link"><i class="fa-solid fa-book"></i><span>Documentation</span></a>
         </nav>
-
         <div class="sidebar-footer">
             <div class="theme-toggle">
-                <button class="theme-btn active" id="btn-light">
-                    <i class="fa-solid fa-sun"></i> Light
-                </button>
-                <button class="theme-btn" id="btn-dark">
-                    <i class="fa-solid fa-moon"></i> Dark
-                </button>
+                <button class="theme-btn active" id="btn-light"><i class="fa-solid fa-sun"></i> Light</button>
+                <button class="theme-btn"         id="btn-dark"><i class="fa-solid fa-moon"></i> Dark</button>
             </div>
         </div>
     </aside>
 
-    <main class="settings-main">
-        <div class="settings-header">
-            <h1><i class="fa-solid fa-gear"></i> Paramètres du compte</h1>
-            <p>Gérez vos informations personnelles et vos préférences de pêche.</p>
+    <!-- ══ ZONE PARAMÈTRES ══ -->
+    <main class="param-wrapper">
+        <div class="param-topbar">
+            <button class="btn-icon" id="btn-open" style="display:none"><i class="fa-solid fa-arrow-right"></i></button>
         </div>
 
-        <form action="/parametre/update" method="POST" class="settings-form">
-            
-            <div class="settings-card">
-                <div class="card-header">
-                    <i class="fa-solid fa-user"></i>
-                    <h2>Informations générales</h2>
-                </div>
-                <div class="card-body">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="username">Nom d'utilisateur</label>
-                            <input type="text" id="username" name="username" value="<?= $username ?>" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Adresse Email</label>
-                            <input type="email" id="email" name="email" value="<?= $email ?>" required>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="param-scroll">
+            <div class="param-card">
 
-            <div class="settings-card">
-                <div class="card-header">
-                    <i class="fa-solid fa-fish"></i>
-                    <h2>Préférences de pêche</h2>
-                </div>
-                <div class="card-body">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="fishing_type">Technique favorite</label>
-                            <select id="fishing_type" name="fishing_type">
-                                <option value="carnassier" <?= $fishing_type == 'carnassier' ? 'selected' : '' ?>>Pêche aux carnassiers</option>
-                                <option value="carpe" <?= $fishing_type == 'carpe' ? 'selected' : '' ?>>Pêche de la carpe</option>
-                                <option value="mouche" <?= $fishing_type == 'mouche' ? 'selected' : '' ?>>Pêche à la mouche</option>
-                                <option value="mer" <?= $fishing_type == 'mer' ? 'selected' : '' ?>>Pêche en mer</option>
-                                <option value="coup" <?= $fishing_type == 'coup' ? 'selected' : '' ?>>Pêche au coup</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="license_num">N° de carte de pêche (optionnel)</label>
-                            <input type="text" id="license_num" name="license_num" value="<?= $license_num ?>" placeholder="Ex: 12A34567">
-                        </div>
+                <!-- ── Avatar ── -->
+                <div class="param-avatar-zone">
+                    <div class="param-avatar" id="avatar-preview" onclick="document.getElementById('avatar-input').click()">
+                        <?php if ($avatarSrc): ?>
+                            <img src="<?= $avatarSrc ?>" alt="avatar" id="avatar-img">
+                            <div class="avatar-overlay"><i class="fa-solid fa-camera"></i></div>
+                        <?php else: ?>
+                            <span id="avatar-letter"><?= $initiale ?></span>
+                            <div class="avatar-overlay"><i class="fa-solid fa-camera"></i></div>
+                        <?php endif; ?>
                     </div>
+                    <input type="file" id="avatar-input" accept="image/*" style="display:none">
+                    <div class="avatar-upload-hint">Cliquez pour changer la photo</div>
+                    <div id="avatar-status" class="avatar-status"></div>
                 </div>
-            </div>
 
-            <div class="settings-card">
-                <div class="card-header">
-                    <i class="fa-solid fa-lock"></i>
-                    <h2>Sécurité & Mot de passe</h2>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <label for="current_password">Mot de passe actuel</label>
-                        <input type="password" id="current_password" name="current_password" placeholder="••••••••">
+                <p class="param-member-since">Membre depuis <?= $memberSince ?></p>
+
+                <!-- ── Identité ── -->
+                <div class="param-section">
+                    <h3 class="param-section-title"><i class="fa-solid fa-user"></i> Informations</h3>
+
+                    <div class="input-float" id="field-username">
+                        <input type="text" id="inp-username"
+                               value="<?= htmlspecialchars($user['username']) ?>"
+                               autocomplete="username"
+                               pattern="[a-zA-Z0-9._\-]+"
+                               maxlength="50">
+                        <label>Nom d'utilisateur</label>
+                        <div class="input-icon" id="username-icon"></div>
+                        <p class="input-hint">Autorisé : a-z A-Z 0-9 . - _</p>
                     </div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="new_password">Nouveau mot de passe</label>
-                            <input type="password" id="new_password" name="new_password" placeholder="••••••••">
-                        </div>
-                        <div class="form-group">
-                            <label for="confirm_password">Confirmer le nouveau mot de passe</label>
-                            <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••">
-                        </div>
+
+                    <div class="input-float">
+                        <input type="email" id="inp-email"
+                               value="<?= htmlspecialchars($user['email']) ?>"
+                               autocomplete="email">
+                        <label>Adresse email</label>
                     </div>
+
+                    <button class="btn-param btn-param--primary" id="btn-save-profile">
+                        <i class="fa-solid fa-floppy-disk"></i> Enregistrer les modifications
+                    </button>
+                    <p class="field-msg" id="msg-profile"></p>
                 </div>
-            </div>
 
-            <div class="form-actions">
-                <button type="reset" class="btn-secondary">Annuler</button>
-                <button type="submit" class="btn-primary">Enregistrer les modifications</button>
-            </div>
+                <!-- ── Mot de passe ── -->
+                <div class="param-section">
+                    <h3 class="param-section-title"><i class="fa-solid fa-lock"></i> Mot de passe</h3>
 
-        </form>
+                    <div class="input-float input-float--password">
+                        <input type="password" id="inp-current" autocomplete="current-password" placeholder=" ">
+                        <label>Mot de passe actuel</label>
+                        <button type="button" class="eye-toggle" data-target="inp-current">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <div class="input-float input-float--password">
+                        <input type="password" id="inp-new" autocomplete="new-password" placeholder=" ">
+                        <label>Nouveau mot de passe</label>
+                        <button type="button" class="eye-toggle" data-target="inp-new">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                        <div class="password-strength" id="pwd-strength"></div>
+                    </div>
+
+                    <div class="input-float input-float--password">
+                        <input type="password" id="inp-confirm" autocomplete="new-password" placeholder=" ">
+                        <label>Confirmer le nouveau mot de passe</label>
+                        <button type="button" class="eye-toggle" data-target="inp-confirm">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <button class="btn-param btn-param--primary" id="btn-save-password">
+                        <i class="fa-solid fa-key"></i> Changer le mot de passe
+                    </button>
+                    <p class="field-msg" id="msg-password"></p>
+                </div>
+
+                <!-- ── Actions compte ── -->
+                <div class="param-section param-section--danger-zone">
+                    <h3 class="param-section-title"><i class="fa-solid fa-circle-exclamation"></i> Compte</h3>
+
+                    <button class="btn-param btn-param--logout" id="btn-logout">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Déconnexion
+                    </button>
+                    <button class="btn-param btn-param--danger" id="btn-delete">
+                        <i class="fa-solid fa-trash"></i> Supprimer le compte
+                    </button>
+                </div>
+
+            </div><!-- /param-card -->
+        </div><!-- /param-scroll -->
     </main>
 
+</div><!-- /app-container -->
+
+<!-- ══ MODAL SUPPRESSION COMPTE ══ -->
+<div class="modal-overlay" id="modal-delete">
+    <div class="modal-box modal-box--danger">
+        <div class="modal-danger-icon"><i class="fa-solid fa-trash"></i></div>
+        <h3>Supprimer votre compte ?</h3>
+        <p>Cette action est <strong>irréversible</strong>. Toutes vos données seront définitivement supprimées.</p>
+        <div class="input-float" style="margin-top:18px">
+            <input type="password" id="inp-delete-confirm" placeholder=" ">
+            <label>Confirmez avec votre mot de passe</label>
+        </div>
+        <p class="field-msg" id="msg-delete"></p>
+        <div class="modal-actions">
+            <button class="btn-param btn-param--ghost" id="btn-delete-cancel">Annuler</button>
+            <button class="btn-param btn-param--danger" id="btn-delete-confirm">
+                <i class="fa-solid fa-trash"></i> Supprimer définitivement
+            </button>
+        </div>
+    </div>
 </div>
 
+<script>
+(function () {
+    'use strict';
+
+    // ── Thème ────────────────────────────────────────────────
+    const app  = document.getElementById('app');
+    const btnL = document.getElementById('btn-light');
+    const btnD = document.getElementById('btn-dark');
+    const applyTheme = t => {
+        app.classList.toggle('theme-dark', t === 'dark');
+        app.classList.toggle('theme-light', t !== 'dark');
+        btnL.classList.toggle('active', t !== 'dark');
+        btnD.classList.toggle('active', t === 'dark');
+        localStorage.setItem('webpeche_theme', t);
+    };
+    applyTheme(localStorage.getItem('webpeche_theme') || 'light');
+    btnL.addEventListener('click', () => applyTheme('light'));
+    btnD.addEventListener('click', () => applyTheme('dark'));
+
+    // ── Sidebar ──────────────────────────────────────────────
+    const sidebar  = document.getElementById('sidebar');
+    const btnOpen  = document.getElementById('btn-open');
+    const btnClose = document.getElementById('btn-close');
+    btnClose.addEventListener('click', () => { sidebar.classList.add('collapsed'); btnOpen.style.display = 'flex'; btnClose.style.display = 'none'; });
+    btnOpen.addEventListener('click',  () => { sidebar.classList.remove('collapsed'); btnOpen.style.display = 'none'; btnClose.style.display = 'flex'; });
+
+    // ── Floating labels (active si valeur pré-remplie) ───────
+    document.querySelectorAll('.input-float input').forEach(inp => {
+        const check = () => inp.closest('.input-float').classList.toggle('has-value', inp.value !== '');
+        check();
+        inp.addEventListener('input', check);
+    });
+
+    // ── Show/hide password ───────────────────────────────────
+    document.querySelectorAll('.eye-toggle').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const inp = document.getElementById(btn.dataset.target);
+            const isText = inp.type === 'text';
+            inp.type = isText ? 'password' : 'text';
+            btn.querySelector('i').className = isText ? 'fa-regular fa-eye' : 'fa-regular fa-eye-slash';
+        });
+    });
+
+    // ── Résistance du mot de passe ───────────────────────────
+    const pwdBar = document.getElementById('pwd-strength');
+    document.getElementById('inp-new').addEventListener('input', function () {
+        const v = this.value;
+        let score = 0;
+        if (v.length >= 8)                score++;
+        if (/[A-Z]/.test(v))              score++;
+        if (/[0-9]/.test(v))              score++;
+        if (/[^a-zA-Z0-9]/.test(v))       score++;
+        const labels = ['', 'Faible', 'Moyen', 'Bon', 'Fort'];
+        const colors = ['', '#ef4444', '#f59e0b', '#22c55e', '#2563eb'];
+        pwdBar.innerHTML = v
+            ? `<span style="color:${colors[score]};font-size:.75rem;font-weight:600">${labels[score] || 'Faible'}</span>
+               <div class="pwd-bar-track"><div class="pwd-bar-fill" style="width:${score*25}%;background:${colors[score]}"></div></div>`
+            : '';
+    });
+
+    // ── Vérification unicité username (debounce 500ms) ───────
+    let usernameTimer;
+    const usernameIcon = document.getElementById('username-icon');
+    document.getElementById('inp-username').addEventListener('input', function () {
+        clearTimeout(usernameTimer);
+        const val = this.value.trim();
+        usernameIcon.innerHTML = '';
+        if (val.length < 3) return;
+        usernameTimer = setTimeout(() => {
+            fetch(`/api/check-username?username=${encodeURIComponent(val)}`)
+                .then(r => r.json())
+                .then(d => {
+                    usernameIcon.innerHTML = d.available
+                        ? '<i class="fa-solid fa-circle-check" style="color:#22c55e"></i>'
+                        : '<i class="fa-solid fa-circle-xmark" style="color:#ef4444"></i>';
+                });
+        }, 500);
+    });
+
+    // ── Enregistrer profil (username + email) ────────────────
+    document.getElementById('btn-save-profile').addEventListener('click', async () => {
+        const username = document.getElementById('inp-username').value.trim();
+        const email    = document.getElementById('inp-email').value.trim();
+        const msg      = document.getElementById('msg-profile');
+
+        msg.textContent = '';
+        const res  = await fetch('/api/parametres/update', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, email })
+        });
+        const data = await res.json();
+        showMsg(msg, data.success ? 'Modifications enregistrées !' : data.message, data.success);
+
+        // Met à jour la sidebar si le username a changé
+        if (data.success && data.username) {
+            const sbAv = document.getElementById('sb-avatar');
+            if (sbAv && !sbAv.querySelector('img')) sbAv.textContent = data.username[0].toUpperCase();
+        }
+    });
+
+    // ── Changer mot de passe ─────────────────────────────────
+    document.getElementById('btn-save-password').addEventListener('click', async () => {
+        const current = document.getElementById('inp-current').value;
+        const newP    = document.getElementById('inp-new').value;
+        const confirm = document.getElementById('inp-confirm').value;
+        const msg     = document.getElementById('msg-password');
+
+        msg.textContent = '';
+        const res  = await fetch('/api/parametres/password', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ current_password: current, new_password: newP, confirm_password: confirm })
+        });
+        const data = await res.json();
+        showMsg(msg, data.success ? 'Mot de passe mis à jour !' : data.message, data.success);
+        if (data.success) {
+            document.getElementById('inp-current').value = '';
+            document.getElementById('inp-new').value     = '';
+            document.getElementById('inp-confirm').value = '';
+            document.querySelectorAll('.input-float').forEach(el => el.classList.remove('has-value'));
+            document.getElementById('pwd-strength').innerHTML = '';
+        }
+    });
+
+    // ── Upload avatar ─────────────────────────────────────────
+    document.getElementById('avatar-input').addEventListener('change', async function () {
+        if (!this.files[0]) return;
+        const form = new FormData();
+        form.append('avatar', this.files[0]);
+
+        const status = document.getElementById('avatar-status');
+        status.textContent = 'Envoi en cours…';
+        status.className   = 'avatar-status';
+
+        const res  = await fetch('/api/parametres/avatar', { method: 'POST', body: form });
+        const data = await res.json();
+
+        if (data.success) {
+            status.textContent = 'Photo mise à jour !';
+            status.className   = 'avatar-status status-ok';
+            // Mise à jour de l'aperçu avatar
+            const preview = document.getElementById('avatar-preview');
+            const overlay = preview.querySelector('.avatar-overlay');
+            const existing = preview.querySelector('img') || preview.querySelector('#avatar-letter');
+            if (existing) existing.remove();
+            const img = document.createElement('img');
+            img.src = data.avatar;
+            img.id  = 'avatar-img';
+            preview.insertBefore(img, overlay);
+            // Sidebar
+            const sbAv = document.getElementById('sb-avatar');
+            if (sbAv) {
+                sbAv.innerHTML = `<img src="${data.avatar}" alt="avatar">`;
+            }
+        } else {
+            status.textContent = data.message || 'Erreur upload.';
+            status.className   = 'avatar-status status-err';
+        }
+    });
+
+    // ── Déconnexion ───────────────────────────────────────────
+    document.getElementById('btn-logout').addEventListener('click', () => {
+        window.location.href = '/logout';
+    });
+
+    // ── Supprimer compte ─────────────────────────────────────
+    const modalDelete = document.getElementById('modal-delete');
+    document.getElementById('btn-delete').addEventListener('click', () => {
+        document.getElementById('inp-delete-confirm').value = '';
+        document.getElementById('msg-delete').textContent   = '';
+        modalDelete.classList.add('open');
+    });
+    document.getElementById('btn-delete-cancel').addEventListener('click', () => {
+        modalDelete.classList.remove('open');
+    });
+
+    document.getElementById('btn-delete-confirm').addEventListener('click', async () => {
+        const password = document.getElementById('inp-delete-confirm').value;
+        const msg      = document.getElementById('msg-delete');
+
+        const res  = await fetch('/api/parametres/delete', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            window.location.href = '/login';
+        } else {
+            showMsg(msg, data.message || 'Erreur.', false);
+        }
+    });
+
+    // ── Helper message inline ─────────────────────────────────
+    function showMsg(el, text, ok) {
+        el.textContent  = text;
+        el.className    = 'field-msg ' + (ok ? 'field-msg--ok' : 'field-msg--err');
+        setTimeout(() => { el.textContent = ''; el.className = 'field-msg'; }, 4000);
+    }
+
+})();
+</script>
 </body>
 </html>

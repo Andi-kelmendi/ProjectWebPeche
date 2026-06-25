@@ -4,15 +4,12 @@
 // Toutes les URLs passent par ici grâce au .htaccess
 // ============================================================
 
-// Charge l'autoloader de Composer (indispensable pour les classes avec namespace, ex: View)
 require_once __DIR__ . '/../vendor/autoload.php';
 
 session_start();
 
 // ============================================================
 // "SE SOUVENIR DE MOI" — reconnexion automatique
-// Si la session a expiré (navigateur fermé) mais qu'un jeton valide
-// existe encore dans le cookie, on reconnecte l'utilisateur tout seul.
 // ============================================================
 if (empty($_SESSION['user_id']) && !empty($_COOKIE['remember_token'])) {
     require_once __DIR__ . '/../src/config/database.php';
@@ -37,16 +34,13 @@ if (empty($_SESSION['user_id']) && !empty($_COOKIE['remember_token'])) {
             $_SESSION['email']    = $user['email'];
             $_SESSION['is_admin'] = !empty($user['is_admin']);
         } else {
-            // Jeton invalide ou expiré : on supprime le cookie inutile
             setcookie('remember_token', '', time() - 3600, '/');
         }
     } catch (\Throwable $e) {
-        // Si la table n'existe pas encore (migration pas faite) on ignore
-        // simplement — l'utilisateur devra juste se reconnecter normalement
+        // Table absente (migration pas encore faite) — on ignore
     }
 }
 
-// On récupère l'URL tapée dans le navigateur
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 // ============================================================
@@ -54,65 +48,83 @@ $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 // ============================================================
 switch ($uri) {
 
-    // Page d'accueil publique (landing page)
-    // → redirige directement vers la carte si déjà connecté
+    // Page d'accueil publique
     case '/':
         if (!empty($_SESSION['user_id'])) {
             header('Location: /accueil');
             exit;
         }
         require_once __DIR__ . '/../src/controllers/HomeController.php';
-        $ctrl = new HomeController();
-        $ctrl->index();
+        (new HomeController())->index();
         break;
 
     // Connexion
     case '/login':
         require_once __DIR__ . '/../src/controllers/AuthController.php';
-        $ctrl = new AuthController();
-        $ctrl->login();
+        (new AuthController())->login();
         break;
 
     // Inscription
     case '/register':
         require_once __DIR__ . '/../src/controllers/AuthController.php';
-        $ctrl = new AuthController();
-        $ctrl->register();
+        (new AuthController())->register();
         break;
 
     // Déconnexion
     case '/logout':
         require_once __DIR__ . '/../src/controllers/AuthController.php';
-        $ctrl = new AuthController();
-        $ctrl->logout();
+        (new AuthController())->logout();
         break;
 
-    // Page principale après connexion (carte)
+    // Carte (page principale après connexion)
     case '/accueil':
         require_once __DIR__ . '/../src/views/accueil.php';
         break;
 
-    // Page profil de l'utilisateur connecté
+    // Profil
     case '/profil':
         require_once __DIR__ . '/../src/views/profil.php';
         break;
 
-    // Page paramètres de l'utilisateur connecté
+    // ── Paramètres ──────────────────────────────────────────
     case '/parametre':
-        require_once __DIR__ . '/../src/views/parametre.php';
+    case '/parametres':
+        require_once __DIR__ . '/../src/controllers/ParametresController.php';
+        (new ParametresController())->show();
         break;
 
-    // Page de documentation / aide — accessible à tous
+    case '/api/parametres/update':
+        require_once __DIR__ . '/../src/controllers/ParametresController.php';
+        (new ParametresController())->updateProfile();
+        break;
+
+    case '/api/parametres/password':
+        require_once __DIR__ . '/../src/controllers/ParametresController.php';
+        (new ParametresController())->updatePassword();
+        break;
+
+    case '/api/parametres/avatar':
+        require_once __DIR__ . '/../src/controllers/ParametresController.php';
+        (new ParametresController())->uploadAvatar();
+        break;
+
+    case '/api/parametres/delete':
+        require_once __DIR__ . '/../src/controllers/ParametresController.php';
+        (new ParametresController())->deleteAccount();
+        break;
+
+    case '/api/check-username':
+        require_once __DIR__ . '/../src/controllers/ParametresController.php';
+        (new ParametresController())->checkUsername();
+        break;
+    // ────────────────────────────────────────────────────────
+
+    // Documentation
     case '/documentation':
         require_once __DIR__ . '/../src/views/documentation.php';
         break;
 
-    // --------------------------------------------------------
-    // API — Spots de pêche
-    // --------------------------------------------------------
-
-    // GET  : liste tous les spots (pour les marqueurs)
-    // POST : crée un nouveau spot
+    // ── API Spots ────────────────────────────────────────────
     case '/api/spots':
         require_once __DIR__ . '/../src/controllers/SpotController.php';
         $ctrl = new SpotController();
@@ -123,35 +135,28 @@ switch ($uri) {
         }
         break;
 
-    // GET ?id=X : détail d'un spot (description + avis)
     case '/api/spot':
         require_once __DIR__ . '/../src/controllers/SpotController.php';
-        $ctrl = new SpotController();
-        $ctrl->show();
+        (new SpotController())->show();
         break;
 
-    // POST : like / dislike un spot
     case '/api/spot/rate':
         require_once __DIR__ . '/../src/controllers/SpotController.php';
-        $ctrl = new SpotController();
-        $ctrl->rate();
+        (new SpotController())->rate();
         break;
 
-    // POST : ajoute un avis (commentaire) sur un spot
     case '/api/spot/comment':
         require_once __DIR__ . '/../src/controllers/SpotController.php';
-        $ctrl = new SpotController();
-        $ctrl->comment();
+        (new SpotController())->comment();
         break;
 
-    // POST : supprime un spot (auteur du spot OU compte admin uniquement)
     case '/api/spot/delete':
         require_once __DIR__ . '/../src/controllers/SpotController.php';
-        $ctrl = new SpotController();
-        $ctrl->destroy();
+        (new SpotController())->destroy();
         break;
+    // ────────────────────────────────────────────────────────
 
-    // URL inconnue → 404
+    // 404
     default:
         http_response_code(404);
         echo '<h1>404 — Page introuvable</h1>';
