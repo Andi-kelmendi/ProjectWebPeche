@@ -87,7 +87,11 @@ $email    = htmlspecialchars($_SESSION['email'] ?? '');
                     <li><a href="#reglementation"  class="toc-link"><i class="fa-solid fa-scale-balanced"></i> Réglementation</a></li>
                     <li><a href="#protegees"       class="toc-link"><i class="fa-solid fa-shield-halved"></i> Espèces protégées</a></li>
                     <li><a href="#invasives"       class="toc-link"><i class="fa-solid fa-triangle-exclamation"></i> Espèces invasives</a></li>
-                    <li><a href="#videos"          class="toc-link"><i class="fa-brands fa-youtube"></i> Vidéos</a></li>
+                    <li><a href="#videos"          class="toc-link"><i class="fa-solid fa-video"></i> Vidéos</a></li>
+                    <li><a href="#astuces-pro"     class="toc-link"><i class="fa-solid fa-trophy"></i> Astuces de pro</a></li>
+                    <li><a href="#pour-tous"       class="toc-link"><i class="fa-solid fa-users"></i> Techniques pour tous</a></li>
+                    <li><a href="#astuces-pro"     class="toc-link"><i class="fa-solid fa-trophy"></i> Astuces de pro</a></li>
+                    <li><a href="#pour-tous"       class="toc-link"><i class="fa-solid fa-users"></i> Pour tout le monde</a></li>
                 </ul>
                 <div class="toc-card-info">
                     <i class="fa-solid fa-circle-info"></i>
@@ -420,7 +424,7 @@ $email    = htmlspecialchars($_SESSION['email'] ?? '');
                 <!-- 08 — Vidéos -->
                 <section class="doc-section" id="videos">
                     <div class="section-label">08 — Vidéos</div>
-                    <h2>Vidéos explicatives en français</h2>
+                    <h2><i class="fa-solid fa-clapperboard section-icon"></i> Vidéos explicatives en français</h2>
                     <p>Ces vidéos sélectionnées vous aideront à visualiser les techniques et à mieux comprendre la pêche en pratique.</p>
                     <div class="videos-grid">
                         <div class="video-card">
@@ -478,6 +482,179 @@ $email    = htmlspecialchars($_SESSION['email'] ?? '');
                             <strong>Playlists YouTube recommandées</strong>
                             <p>Pour aller plus loin : <a href="https://youtube.com/playlist?list=PLxfzG8LoCw720ACkarY_WWMR0tnAMxwSN&si=dI3coNUT_jAfDT5C" target="_blank" rel="noopener">Fishing Chaos</a>, <a href="https://www.youtube.com/@carpcontact" target="_blank" rel="noopener">Carp Contact</a>, et les vidéos officielles de la <a href="https://www.youtube.com/@FedNatPeche" target="_blank" rel="noopener">Fédération Nationale de Pêche</a>.</p>
                         </div>
+                    </div>
+                </section>
+
+                <!-- 09 — Astuces de pro -->
+                <section class="doc-section" id="astuces-pro">
+                    <div class="section-label">09 — Astuces de pro</div>
+                    <h2><i class="fa-solid fa-trophy section-icon"></i> Astuces de pro</h2>
+                    <p>Ces conseils viennent de pêcheurs expérimentés. Ils feront la différence entre une sortie ordinaire et une sortie mémorable.</p>
+
+                    <div class="pro-grid">
+
+                        <div class="pro-card">
+                            <div class="pro-card-header">
+                                <div class="pro-icon"><i class="fa-solid fa-eye"></i></div>
+                                <h4>Observer avant de lancer</h4>
+                            </div>
+                            <p>Prenez 5 minutes à observer l'eau avant de pêcher : remous, sauts de poissons, végétation immergée. Les pros repèrent les poissons avant de les pêcher.</p>
+                            <div class="pro-badge"><i class="fa-solid fa-star"></i> Niveau confirmé</div>
+                        </div>
+
+                        <div class="pro-card">
+                            <div class="pro-card-header">
+                                <div class="pro-icon"><i class="fa-solid fa-clock"></i></div>
+                                <h4>Les meilleures heures</h4>
+                            </div>
+                            <p>L'aube (6h–9h) et le crépuscule (18h–21h) sont les heures d'or. Les poissons montent en surface pour se nourrir et sont bien plus actifs qu'en pleine journée.</p>
+                            <div class="pro-badge"><i class="fa-solid fa-star"></i> Niveau confirmé</div>
+                        </div>
+
+                        <div class="pro-card">
+                            <div class="pro-card-header">
+                                <div class="pro-icon"><i class="fa-solid fa-temperature-half"></i></div>
+                                <h4>Pêcher par temps couvert</h4>
+                            </div>
+                            <p>Un ciel nuageux est souvent meilleur qu'un soleil éclatant. La lumière diffuse incite les poissons à s'approcher de la surface. Évitez les journées trop chaudes en été.</p>
+                            <div class="pro-badge"><i class="fa-solid fa-star"></i> Niveau confirmé</div>
+                        </div>
+
+                        <div class="pro-card">
+                            <div class="pro-card-header">
+                                <div class="pro-icon"><i class="fa-solid fa-wind"></i></div>
+                                <h4>Travailler vent dans le dos</h4>
+                            </div>
+                            <p>Le vent pousse les insectes et la nourriture vers la rive sous le vent. Installez-vous dos au vent pour bénéficier de cette concentration naturelle d'appâts.</p>
+                            <div class="pro-badge"><i class="fa-solid fa-star"></i> Niveau confirmé</div>
+                        </div>
+
+                        <div class="pro-card">
+                            <div class="pro-card-header">
+                                <div class="pro-icon"><i class="fa-solid fa-volume-xmark"></i></div>
+                                <h4>Silence et discrétion</h4>
+                            </div>
+                            <p>Les vibrations se propagent très bien dans l'eau. Évitez de frapper le sol, de parler fort ou de faire du bruit. Les poissons s'enfuient à la moindre alerte.</p>
+                            <div class="pro-badge"><i class="fa-solid fa-star"></i> Essentiel</div>
+                        </div>
+
+                        <div class="pro-card">
+                            <div class="pro-card-header">
+                                <div class="pro-icon"><i class="fa-solid fa-droplet-slash"></i></div>
+                                <h4>Changer d'appât régulièrement</h4>
+                            </div>
+                            <p>Un ver qui pend depuis 20 minutes sans touche ? Changez-le. Les appâts frais et mobiles sont bien plus attractifs. Les pros changent toutes les 10–15 minutes.</p>
+                            <div class="pro-badge"><i class="fa-solid fa-star"></i> Niveau confirmé</div>
+                        </div>
+
+                    </div>
+
+                    <div class="doc-callout doc-callout--yellow">
+                        <i class="fa-solid fa-lightbulb"></i>
+                        <div>
+                            <strong>Le secret des pros</strong>
+                            <p>La pêche, c'est 80% d'observation et 20% de technique. Plus vous passez de temps à observer votre environnement, plus vous comprendrez les comportements des poissons et vous adapterez.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 10 — Pour tout le monde -->
+                <section class="doc-section" id="pour-tous">
+                    <div class="section-label">10 — Pour tout le monde</div>
+                    <h2><i class="fa-solid fa-users section-icon"></i> Techniques pour tout le monde</h2>
+                    <p>Ces techniques sont accessibles quel que soit votre niveau ou votre budget. Elles couvrent les situations les plus courantes que vous rencontrerez en bord d'eau.</p>
+
+                    <div class="technique-tabs">
+                        <div class="technique-card technique-card--debutant">
+                            <div class="technique-card-top">
+                                <div class="technique-level technique-level--debutant">
+                                    <i class="fa-solid fa-seedling"></i> Débutant
+                                </div>
+                                <h4>Pêche à l'asticot</h4>
+                            </div>
+                            <p>L'asticot (larve de mouche) est l'appât le plus polyvalent qui existe. Il attire la brème, la perche, le gardon et même la carpe. Piquez-en 2 ou 3 sur l'hameçon et laissez descendre.</p>
+                            <ul class="technique-tips">
+                                <li><i class="fa-solid fa-check"></i> Appât facile à trouver (animalerie ou magasin de pêche)</li>
+                                <li><i class="fa-solid fa-check"></i> Fonctionne toute l'année</li>
+                                <li><i class="fa-solid fa-check"></i> Idéal pour les étangs et rivières calmes</li>
+                            </ul>
+                        </div>
+
+                        <div class="technique-card technique-card--intermediaire">
+                            <div class="technique-card-top">
+                                <div class="technique-level technique-level--intermediaire">
+                                    <i class="fa-solid fa-fish"></i> Intermédiaire
+                                </div>
+                                <h4>Pêche au leurre souple</h4>
+                            </div>
+                            <p>Le leurre souple imite un petit poisson ou un ver. On le fait nager en récupérant le fil par à-coups (technique "stop & go"). Redoutable pour le brochet, la perche et le sandre.</p>
+                            <ul class="technique-tips">
+                                <li><i class="fa-solid fa-check"></i> Pas d'appât vivant nécessaire</li>
+                                <li><i class="fa-solid fa-check"></i> Très efficace en eaux claires</li>
+                                <li><i class="fa-solid fa-check"></i> Nécessite une canne avec moulinet</li>
+                            </ul>
+                        </div>
+
+                        <div class="technique-card technique-card--avance">
+                            <div class="technique-card-top">
+                                <div class="technique-level technique-level--avance">
+                                    <i class="fa-solid fa-trophy"></i> Avancé
+                                </div>
+                                <h4>Pêche à la mouche</h4>
+                            </div>
+                            <p>La pêche à la mouche utilise de faux insectes en plume ou en fibres synthétiques. La technique de lancer est complexe mais le résultat est exceptionnel, notamment pour la truite en rivière.</p>
+                            <ul class="technique-tips">
+                                <li><i class="fa-solid fa-check"></i> Technique noble et très efficace pour la truite</li>
+                                <li><i class="fa-solid fa-check"></i> Nécessite un apprentissage du lancer</li>
+                                <li><i class="fa-solid fa-check"></i> Matériel spécifique (soie flottante, canne légère)</li>
+                            </ul>
+                        </div>
+
+                        <div class="technique-card technique-card--debutant">
+                            <div class="technique-card-top">
+                                <div class="technique-level technique-level--debutant">
+                                    <i class="fa-solid fa-seedling"></i> Débutant
+                                </div>
+                                <h4>Pêche au pain</h4>
+                            </div>
+                            <p>Une tranche de pain de mie ou une boulette de mie humide est un appât redoutablement efficace pour la carpe et le gardon. Gratuit, simple et naturel.</p>
+                            <ul class="technique-tips">
+                                <li><i class="fa-solid fa-check"></i> Appât 100% gratuit</li>
+                                <li><i class="fa-solid fa-check"></i> Excellent pour les carpes de surface</li>
+                                <li><i class="fa-solid fa-check"></i> Visible de loin pour le poisson</li>
+                            </ul>
+                        </div>
+
+                        <div class="technique-card technique-card--intermediaire">
+                            <div class="technique-card-top">
+                                <div class="technique-level technique-level--intermediaire">
+                                    <i class="fa-solid fa-fish"></i> Intermédiaire
+                                </div>
+                                <h4>Pêche au feeder</h4>
+                            </div>
+                            <p>Le feeder est une cage métallique remplie d'amorce qui s'enfonce au fond et libère doucement l'appât. Idéal pour attirer les gros gardons et brèmes sur votre poste.</p>
+                            <ul class="technique-tips">
+                                <li><i class="fa-solid fa-check"></i> Efficace dans les rivières à courant</li>
+                                <li><i class="fa-solid fa-check"></i> Pêche de fond, poissons souvent plus gros</li>
+                                <li><i class="fa-solid fa-check"></i> Matériel accessible (~20 € pour débuter)</li>
+                            </ul>
+                        </div>
+
+                        <div class="technique-card technique-card--avance">
+                            <div class="technique-card-top">
+                                <div class="technique-level technique-level--avance">
+                                    <i class="fa-solid fa-trophy"></i> Avancé
+                                </div>
+                                <h4>Carpfishing (nuit)</h4>
+                            </div>
+                            <p>La pêche de la carpe de nuit est une discipline à part entière. On pose 2 à 3 cannes avec des bouillettes (appâts bouillis) et on attend l'alarme de touche. Prises souvent spectaculaires.</p>
+                            <ul class="technique-tips">
+                                <li><i class="fa-solid fa-check"></i> Carpes de grande taille possibles</li>
+                                <li><i class="fa-solid fa-check"></i> Matériel spécifique (bivouac, détecteurs)</li>
+                                <li><i class="fa-solid fa-check"></i> Certains plans d'eau autorisent les sessions nuit</li>
+                            </ul>
+                        </div>
+
                     </div>
                 </section>
 
