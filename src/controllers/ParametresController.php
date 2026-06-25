@@ -28,7 +28,7 @@ class ParametresController
 
         if (!$user) { header('Location: /logout'); exit; }
 
-        require_once __DIR__ . '/../views/parametres.php';
+        require_once __DIR__ . '/../views/parametre.php';
     }
 
     /** POST /api/parametres/update — change username ET/OU email */
