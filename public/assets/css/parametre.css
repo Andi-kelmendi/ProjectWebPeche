@@ -1,123 +1,170 @@
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    height: 100vh;
-    overflow: hidden;
-}
-
-/* ── Variables couleurs : thème clair (par défaut) ── */
-body.theme-light {
-    --bg-sidebar:    #f4f5f7;
-    --bg-card:       #ffffff;
-    --bg-input:      #e9eaee;
-    --text-main:     #14161a;
-    --text-muted:    #6b7280;
-    --text-accent:   #2563eb;
-    --border-color:  #e1e2e6;
-    --btn-icon-bg:   #e9eaee;
-    --btn-icon-hover:#dcdde2;
-    --topbar-bg:     #ffffff;
-}
-
-/* ── Variables couleurs : thème sombre ── */
-body.theme-dark {
-    --bg-sidebar:    #1b1d22;
-    --bg-card:       #24262c;
-    --bg-input:      #2e3038;
-    --text-main:     #f3f4f6;
-    --text-muted:    #9aa0ab;
-    --text-accent:   #5b8def;
-    --border-color:  #34363d;
-    --btn-icon-bg:   #2e3038;
-    --btn-icon-hover:#3a3c45;
-    --topbar-bg:     #1b1d22;
-}
-
-body {
-    background: var(--bg-sidebar);
-    color: var(--text-main);
-}
-
-/* ── Conteneur principal ── */
-.app-container {
-    display: flex;
-    height: 100vh;
-}
-
 /* ================================================================
-   SIDEBAR GAUCHE
+   PAGE PARAMÈTRES
    ================================================================ */
-.sidebar {
-    width: 300px;
-    min-width: 300px;
-    background: var(--bg-sidebar);
-    display: flex;
-    flex-direction: column;
-    padding: 22px 20px;
-    transition: margin-left 0.28s ease, opacity 0.2s ease;
-    overflow: hidden;
-    border-right: 1px solid var(--border-color);
+
+/* Zone principale de contenu */
+.settings-main {
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 40px;
+    background: var(--bg-sidebar); /* Garde le fond aligné avec la sidebar */
 }
 
-/* État replié : on la fait glisser hors champ */
-.sidebar.collapsed {
-    margin-left: -300px;
-    opacity: 0;
+/* En-tête de la page */
+.settings-header {
+    margin-bottom: 32px;
 }
 
-/* ── En-tête : avatar + email + bouton fermer ── */
-.sidebar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 28px;
-}
-
-.user-card {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    overflow: hidden;
-}
-
-.user-avatar {
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    border-radius: 12px;
-    background: var(--bg-card);
-    border: 2px solid var(--text-accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.settings-header h1 {
+    font-size: 1.8rem;
     font-weight: 700;
-    font-size: 1.05rem;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.settings-header h1 i {
     color: var(--text-accent);
 }
 
-.user-info {
+.settings-header p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* Conteneur du formulaire */
+.settings-form {
+    max-width: 800px;
     display: flex;
     flex-direction: column;
+    gap: 24px;
+    padding-bottom: 60px; /* Espace en bas pour scroller confortablement */
+}
+
+/* Design des blocs / cartes */
+.settings-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
     overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
-.app-brand {
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: var(--text-main);
-    white-space: nowrap;
+.card-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.user-email {
-    font-size: 0.76rem;
+.card-header i {
     color: var(--text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 1.1rem;
+}
+
+.card-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.card-body {
+    padding: 24px;
+}
+
+/* Organisation en grille pour les champs alignés */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Groupes de formulaires (Label + Input) */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+/* Style des Inputs et Selects */
+.form-group input, 
+.form-group select {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-input);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus, 
+.form-group select:focus {
+    outline: none;
+    border-color: var(--text-accent);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.form-group input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+/* Zone finale des boutons de soumission */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+/* Boutons */
+.btn-primary, 
+.btn-secondary {
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--text-accent);
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-input);
+    color: var(--text-main);
 }

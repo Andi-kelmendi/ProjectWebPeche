@@ -74,8 +74,12 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
             </a>
         </nav>
 
-        <!-- Bas de la sidebar : toggle thème -->
+        <!-- Bas de la sidebar : déconnexion + toggle thème -->
         <div class="sidebar-footer">
+            <a href="/logout" class="btn-logout">
+                <i class="fa-solid fa-right-from-bracket"></i> Se déconnecter
+            </a>
+
             <div class="theme-toggle">
                 <button class="theme-btn active" id="btn-light">
                     <i class="fa-solid fa-sun"></i> Light
@@ -841,7 +845,7 @@ async function rateSpotStars(id, score, starEl) {
 
         // Met à jour le badge dans le panneau "Voir plus", s'il affiche ce même spot
         if (spotPanel.dataset.currentSpot === String(id)) {
-            const panelBadge = document.querySelector('.panel-meta .spot-rating-value');
+            const panelBadge = document.querySelector('.panel-rating-row .spot-rating-value');
             if (panelBadge) applyRatingBadge(panelBadge, data.rating);
         }
     } catch (err) {
@@ -1020,17 +1024,18 @@ function renderSpotPanel(spot) {
             ` : ''}
         </div>
 
-        <div class="panel-meta">
+        <div class="panel-rating-row">
             ${ratingBadgeHtml(spot.rating)}
-            <span>📍 ${escapeHtml(region)}</span>
-        </div>
-        <p class="panel-species">🐟 ${escapeHtml(species)}</p>
-        <p class="panel-description">${escapeHtml(description)}</p>
-
-        <div class="panel-rate-block">
-            <span class="panel-vote-label">Votre note :</span>
             <div class="panel-stars" data-selected="${spot.my_score || 0}">${buildStarsHtml(spot.id, spot.my_score || 0)}</div>
         </div>
+        <p class="panel-rating-hint">Cliquez sur une étoile pour donner votre note</p>
+
+        <div class="panel-info-block">
+            <p class="panel-meta-line"><i class="fa-solid fa-location-dot"></i> ${escapeHtml(region)}</p>
+            <p class="panel-meta-line">🐟 ${escapeHtml(species)}</p>
+        </div>
+
+        <p class="panel-description">${escapeHtml(description)}</p>
 
         <hr>
 
