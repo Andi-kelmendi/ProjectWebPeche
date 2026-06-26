@@ -11,7 +11,7 @@ $memberSince = $user['created_at'] ? date('F Y', strtotime($user['created_at']))
     <title>WebPêche — Paramètres</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/accueil.css">
-    <link rel="stylesheet" href="/assets/css/parametres.css">
+    <link rel="stylesheet" href="/assets/css/parametre.css">
 </head>
 <body class="theme-light" id="app">
 <div class="app-container">
