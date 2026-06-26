@@ -79,7 +79,7 @@ composer install
 
 1. Créer la base de données :
    ```sql
-   CREATE DATABASE ProjectWebPeche CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   CREATE DATABASE projectwebpeche CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 
 2. Importer le fichier SQL :
@@ -87,7 +87,7 @@ composer install
    mysql -u root -p ProjectWebPeche < db/ProjectWebPeche.sql
    ```
 
-> **Compte test** :  
+> **Compte Admin** :  
 > Email : `admin@webpeche.fr`  
 > Mot de passe : `password123`
 
