@@ -56,7 +56,7 @@ $email    = htmlspecialchars($_SESSION['email']    ?? '');
                 <i class="fa-regular fa-circle-user"></i>
                 <span>Communauté</span>
             </a>
-            <a href="/parametre" class="nav-link">
+            <a href="/parametres" class="nav-link">
                 <i class="fa-solid fa-gear"></i>
                 <span>Paramètre</span>
             </a>
